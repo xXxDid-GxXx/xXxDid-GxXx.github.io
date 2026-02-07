@@ -1,0 +1,962 @@
+/* ============================================
+   PROJECT PAGE STYLES
+   ============================================ */
+
+/* Project Page Body - Full-page scroll snap */
+body:has(.project-hero) {
+  background-color: #090909;
+  overflow-x: hidden;
+  scroll-snap-type: y proximity;
+  scroll-behavior: smooth;
+}
+
+/* Back Button */
+.back-button {
+  position: fixed;
+  top: var(--space-lg);
+  left: var(--space-lg);
+  width: 48px;
+  height: 48px;
+  background-color: #000000;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  text-decoration: none;
+  z-index: 100;
+  transition: background-color 0.2s ease;
+}
+
+.back-button:hover {
+  background-color: #1a1a1a;
+}
+
+/* Container for sections */
+.project-sticky-container {
+  position: relative;
+}
+
+/* Project Hero Section */
+.project-hero {
+  width: 100%;
+  height: 100vh;
+  overflow: visible;
+  position: sticky;
+  top: 0;
+  background-color: #090909;
+  z-index: 1;
+  scroll-snap-align: start;
+}
+
+.project-hero-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  height: 100%;
+}
+
+/* Left Column: Image */
+.project-hero-image {
+  height: 100%;
+  overflow: hidden;
+  display: flex;
+  align-items: stretch;
+  justify-content: stretch;
+  padding: 0;
+  opacity: 0;
+  transform: translateX(-100%);
+  animation: slideFromLeft 0.8s ease-out forwards;
+}
+
+.project-hero-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none;
+}
+
+/* Right Column: Info */
+.project-hero-info {
+  display: grid;
+  grid-template-rows: 50% 50%;
+  height: 100%;
+}
+
+/* Upper Section */
+.project-info-upper {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-content: center;
+  padding: var(--space-2xl);
+  gap: var(--space-xl) var(--space-lg);
+  opacity: 0;
+  transform: translateY(-100%);
+  animation: slideFromTop 0.8s ease-out forwards;
+}
+
+/* Hero Upper Section - Equal row heights */
+.project-hero-info .project-info-upper {
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  align-content: stretch;
+}
+
+/* Lower Section */
+.project-info-lower {
+  padding: var(--space-2xl);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transform: translateY(100%);
+  animation: slideFromBottom 0.8s ease-out forwards;
+}
+
+/* Project Logo */
+.project-logo {
+  max-width: 400px;
+  height: auto;
+  pointer-events: none;
+}
+
+/* Lower Section with Text */
+.project-info-lower-text {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-content: center;
+  gap: var(--space-xl) var(--space-lg);
+  justify-content: flex-start;
+  align-items: flex-start;
+}
+
+/* Info Block - Contents to flatten into parent grid */
+.project-info-block {
+  display: contents;
+}
+
+/* Label */
+.project-info-label {
+  font-size: var(--text-sm);
+  font-weight: var(--font-weight-regular);
+  color: var(--color-gray-500);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  align-self: start;
+  padding-top: 0.35em;
+}
+
+/* Value */
+.project-info-value {
+  font-weight: var(--font-weight-medium);
+  color: #ffffff;
+}
+
+/* Project Name (headline) */
+.project-name {
+  font-size: var(--text-5xl);
+  font-weight: var(--font-weight-bold);
+  line-height: 1.1;
+  color: #ffffff;
+}
+
+/* Project Details */
+.project-details {
+  font-size: var(--text-base);
+  line-height: 1.8;
+  color: #ffffff;
+}
+
+.project-details p {
+  margin-bottom: var(--space-xs);
+}
+
+.project-details p:last-child {
+  margin-bottom: 0;
+}
+
+.project-details strong {
+  font-weight: var(--font-weight-regular);
+  color: var(--color-gray-500);
+}
+
+/* Entry Animations */
+@keyframes slideFromLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideFromTop {
+  from {
+    opacity: 0;
+    transform: translateY(-100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideFromBottom {
+  from {
+    opacity: 0;
+    transform: translateY(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ============================================
+   PROJECT SECTIONS (Scrollable)
+   ============================================ */
+
+/* Project Section - Slides in over previous content */
+.project-section {
+  width: 100%;
+  min-height: 100vh;
+  position: relative;
+  background-color: transparent;
+  z-index: 2;
+  scroll-snap-align: start;
+}
+
+/* Sticky section - stays in place while next section slides over */
+.project-section-sticky {
+  position: sticky;
+  top: 0;
+  min-height: 100vh;
+  z-index: 1;
+}
+
+.project-section-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  min-height: 100vh;
+  position: relative;
+}
+
+/* Left column has solid background, right is transparent */
+.project-section-left {
+  background-color: #090909;
+}
+
+/* Right column has solid background */
+.project-section-right {
+  background-color: #090909;
+}
+
+/* Section Left Column - Layout */
+.project-section-left {
+  display: grid;
+  grid-template-rows: 50vh 50vh;
+  min-height: 100vh;
+}
+
+.project-section-left-full {
+  grid-template-rows: 1fr;
+}
+
+/* Section Right Column - Layout */
+.project-section-right {
+  display: grid;
+  grid-template-rows: 50vh 50vh;
+  min-height: 100vh;
+}
+
+/* Section Image */
+.project-section-image {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-lg);
+  overflow: hidden;
+  position: relative;
+  cursor: pointer;
+}
+
+.project-section-image-full {
+  height: 100%;
+}
+
+.project-section-image img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+/* Section Info */
+.project-section-info {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-content: start;
+  padding: var(--space-2xl);
+  gap: var(--space-xl) var(--space-lg);
+  overflow-y: auto;
+}
+
+/* Section Diagram */
+.project-section-diagram {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-lg);
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.project-section-diagram img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+.project-section-diagram::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.6);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: center;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.project-section-diagram:hover::after {
+  opacity: 1;
+}
+
+/* Diagram Title */
+.project-diagram-title {
+  position: absolute;
+  bottom: var(--space-lg);
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: var(--text-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-gray-400);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  z-index: 1;
+}
+
+/* Image Title */
+.project-image-title {
+  position: absolute;
+  bottom: var(--space-lg);
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: var(--text-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-gray-400);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  z-index: 1;
+  white-space: nowrap;
+}
+
+/* ============================================
+   INFO-ONLY SECTION (Right column only)
+   ============================================ */
+
+/* Info-only section - right side solid, left side transparent */
+.project-section-info-only {
+  display: flex;
+  justify-content: flex-end;
+  background: transparent;
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  height: 100vh;
+  scroll-snap-align: start;
+}
+
+.project-section-info-grid {
+  display: grid;
+  grid-template-rows: 50vh 50vh;
+  height: 100vh;
+  width: 50%;
+  background-color: #090909;
+}
+
+.project-section-info-only .project-info-upper,
+.project-section-info-only .project-info-lower {
+  opacity: 1;
+  transform: translateY(0);
+  animation: none;
+}
+
+/* ============================================
+   IMAGES-ONLY SECTION (Left column only)
+   ============================================ */
+
+/* Images-only section - left side solid, right side transparent */
+.project-section-images-only {
+  display: flex;
+  justify-content: flex-start;
+  background: transparent;
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  min-height: 100vh;
+  scroll-snap-align: start;
+}
+
+.project-section-images-grid {
+  display: grid;
+  grid-template-rows: 50vh 50vh;
+  min-height: 100vh;
+  width: 50%;
+  background-color: #090909;
+}
+
+/* ============================================
+   IMAGES-ONLY SECTION (Right column only)
+   ============================================ */
+
+/* Images-only section - right side solid, left side transparent */
+.project-section-images-right-only {
+  display: flex;
+  justify-content: flex-end;
+  background: transparent;
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  height: 100vh;
+  scroll-snap-align: start;
+}
+
+.project-section-images-right-grid {
+  display: grid;
+  grid-template-rows: 1fr;
+  height: 100vh;
+  width: 50%;
+  background-color: #090909;
+}
+
+.project-section-images-right-grid-2rows {
+  grid-template-rows: 50vh 50vh;
+  height: 100vh;
+}
+
+/* ============================================
+   RESPONSIVE - Hero
+   ============================================ */
+
+@media (max-width: 1024px) {
+  /* Disable strict scroll snap on tablet/mobile for better UX */
+  body:has(.project-hero) {
+    scroll-snap-type: y proximity;
+  }
+
+  .project-hero,
+  .project-section-sticky,
+  .project-section-info-only,
+  .project-section-images-only {
+    position: relative;
+  }
+
+  .project-hero-grid {
+    grid-template-columns: 1fr;
+    grid-template-rows: 50vh auto;
+  }
+
+  /* Full width backgrounds on tablet/mobile */
+  .project-section-info-only,
+  .project-section-images-only {
+    background-color: #090909;
+  }
+
+  .project-hero-image {
+    height: 50vh;
+    padding: var(--space-md);
+  }
+
+  .project-info-upper {
+    padding: var(--space-xl);
+    gap: var(--space-lg) var(--space-md);
+  }
+
+  .project-info-lower-text {
+    padding: var(--space-xl);
+    gap: var(--space-lg) var(--space-md);
+  }
+
+  .project-name {
+    font-size: var(--text-4xl);
+  }
+
+  /* Info-only section responsive */
+  .project-section-info-only {
+    justify-content: center;
+  }
+
+  .project-section-info-grid {
+    width: 100%;
+    padding: 0 var(--space-lg);
+  }
+
+  /* Images-only section responsive */
+  .project-section-images-only {
+    justify-content: center;
+  }
+
+  .project-section-images-grid {
+    width: 100%;
+    grid-template-rows: 50vh 50vh;
+  }
+
+  /* Images-only right section responsive */
+  .project-section-images-right-only {
+    justify-content: center;
+    background-color: #090909;
+  }
+
+  .project-section-images-right-grid {
+    width: 100%;
+    grid-template-rows: 50vh;
+  }
+
+  .project-section-images-right-grid-2rows {
+    grid-template-rows: 50vh 50vh;
+    min-height: 100vh;
+  }
+}
+
+@media (max-width: 640px) {
+  .project-info-upper {
+    padding: var(--space-lg);
+    grid-template-columns: 1fr;
+    gap: var(--space-sm);
+  }
+
+  .project-info-lower-text {
+    grid-template-columns: 1fr;
+    padding: var(--space-lg);
+    gap: var(--space-sm);
+  }
+
+  .project-info-label {
+    padding-top: 0;
+  }
+
+  .project-name {
+    font-size: var(--text-3xl);
+  }
+
+  .project-details {
+    font-size: var(--text-sm);
+  }
+
+  .project-logo {
+    max-width: 300px;
+  }
+}
+
+/* ============================================
+   RESPONSIVE - Project Sections
+   ============================================ */
+
+@media (max-width: 1024px) {
+  .project-section {
+    height: auto;
+    min-height: 100vh;
+  }
+
+  .project-section-grid {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto;
+    height: auto;
+  }
+
+  .project-section-left {
+    grid-template-rows: 50vh 50vh;
+    height: auto;
+  }
+
+  .project-section-left-full {
+    grid-template-rows: 100vh;
+  }
+
+  .project-section-right {
+    grid-template-rows: 50vh 50vh;
+    height: auto;
+  }
+
+  .project-section-info {
+    padding: var(--space-xl);
+    gap: var(--space-lg) var(--space-md);
+    min-height: 50vh;
+  }
+
+  .project-section-diagram {
+    min-height: 50vh;
+  }
+}
+
+@media (max-width: 640px) {
+  .project-section-info {
+    grid-template-columns: 1fr;
+    padding: var(--space-lg);
+    gap: var(--space-sm);
+  }
+
+  .project-section-image {
+    min-height: 50vh;
+    padding: var(--space-md);
+  }
+
+  .project-section-diagram {
+    min-height: 50vh;
+    padding: var(--space-md);
+  }
+
+  .project-diagram-title {
+    top: var(--space-md);
+    left: var(--space-md);
+    font-size: var(--text-xs);
+  }
+}
+
+/* ============================================
+   REDUCED MOTION
+   ============================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  .project-hero-image,
+  .project-info-upper,
+  .project-info-lower {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ============================================
+   LIGHTBOX MODAL
+   ============================================ */
+
+.lightbox {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.95);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+  cursor: pointer;
+  overflow: hidden;
+}
+
+.lightbox.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+.lightbox-image {
+  max-width: 90%;
+  max-height: 90%;
+  object-fit: contain;
+  cursor: zoom-in;
+  transform: scale(0.9);
+  transition: transform 0.3s ease;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+.lightbox.active .lightbox-image {
+  transform: scale(1);
+}
+
+.lightbox.active .lightbox-image.zoomed {
+  transform: scale(1.8);
+  cursor: grab;
+}
+
+.lightbox.active .lightbox-image.zoomed.dragging {
+  cursor: grabbing;
+  transition: none;
+}
+
+.lightbox-close {
+  position: absolute;
+  top: var(--space-lg);
+  right: var(--space-lg);
+  width: 48px;
+  height: 48px;
+  background-color: #000000;
+  border: none;
+  color: #ffffff;
+  font-size: 28px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s ease;
+  z-index: 1001;
+}
+
+.lightbox-close:hover {
+  background-color: #1a1a1a;
+}
+
+.lightbox-title {
+  position: absolute;
+  bottom: var(--space-lg);
+  left: 50%;
+  transform: translateX(-50%);
+  color: #ffffff;
+  font-size: var(--font-size-base);
+  font-weight: 500;
+  text-align: center;
+  padding: var(--space-xs) var(--space-md);
+  background-color: rgba(0, 0, 0, 0.7);
+  border-radius: 4px;
+  max-width: 90%;
+  z-index: 1001;
+}
+
+.lightbox-title:empty {
+  display: none;
+}
+
+/* Make project images clickable */
+.project-section-image,
+.project-section-diagram {
+  position: relative;
+  cursor: pointer;
+}
+
+/* Hover overlay for expandable images */
+.project-section-image::after,
+.project-section-diagram::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.6);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: center;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.project-section-image:hover::after,
+.project-section-diagram:hover::after {
+  opacity: 1;
+}
+
+/* ============================================
+   SCROLL TO TOP BUTTON
+   ============================================ */
+
+.scroll-to-top {
+  position: fixed;
+  bottom: var(--space-lg);
+  right: var(--space-lg);
+  width: 48px;
+  height: 48px;
+  background-color: #000000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  cursor: pointer;
+  z-index: 100;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0.3s ease, background-color 0.2s ease;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.scroll-to-top.visible {
+  opacity: 1;
+  visibility: visible;
+}
+
+.scroll-to-top:hover {
+  background-color: #1a1a1a;
+}
+
+/* ============================================
+   MORE PROJECTS SECTION
+   ============================================ */
+
+.more-projects-section {
+  width: 100%;
+  min-height: 100vh;
+  background-color: #090909;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  z-index: 2;
+  scroll-snap-align: start;
+}
+
+.more-projects-container {
+  width: 100%;
+  max-width: 1200px;
+  padding: var(--space-3xl) var(--space-2xl);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2xl);
+}
+
+.more-projects-title {
+  font-size: var(--text-4xl);
+  font-weight: var(--font-weight-bold);
+  color: #ffffff;
+  text-align: center;
+}
+
+.more-projects-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-lg);
+  width: 100%;
+}
+
+.more-projects-card {
+  display: block;
+  text-decoration: none;
+  background-color: #111111;
+  overflow: hidden;
+  transition: transform 0.3s ease, background-color 0.3s ease;
+}
+
+.more-projects-card:hover {
+  transform: translateY(-4px);
+  background-color: #1a1a1a;
+}
+
+.more-projects-card-image {
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+}
+
+.more-projects-card-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.4s ease;
+}
+
+.more-projects-card:hover .more-projects-card-image img {
+  transform: scale(1.03);
+}
+
+.more-projects-card-info {
+  padding: var(--space-lg);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.more-projects-card-name {
+  font-size: var(--text-xl);
+  font-weight: var(--font-weight-semibold);
+  color: #ffffff;
+}
+
+.more-projects-card-tag {
+  font-size: var(--text-sm);
+  font-weight: var(--font-weight-regular);
+  color: var(--color-gray-500);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.more-projects-btn {
+  border-color: #ffffff;
+  color: #ffffff;
+}
+
+.more-projects-btn:hover,
+.more-projects-btn:focus-visible {
+  background-color: #ffffff;
+  color: #090909;
+}
+
+/* More Projects Responsive */
+@media (max-width: 640px) {
+  .more-projects-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .more-projects-title {
+    font-size: var(--text-3xl);
+  }
+
+  .more-projects-container {
+    padding: var(--space-2xl) var(--space-lg);
+  }
+}
+
+/* ============================================
+   PROJECT FOOTER
+   ============================================ */
+
+.project-footer {
+  position: relative;
+  z-index: 2;
+  border-top: none;
+  background-color: #ffffff;
+}
+
+.project-footer .footer-text {
+  color: #090909;
+}
+
+/* ============================================
+   SCROLL APPEAR ANIMATIONS
+   ============================================ */
+
+/* Initial hidden state for animatable elements */
+.scroll-appear {
+  opacity: 0;
+  transform: translateY(-30px);
+  transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+}
+
+/* Visible state when scrolled into view */
+.scroll-appear.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Stagger delays for multiple elements */
+.scroll-appear.delay-1 { transition-delay: 0.1s; }
+.scroll-appear.delay-2 { transition-delay: 0.2s; }
+.scroll-appear.delay-3 { transition-delay: 0.3s; }
+.scroll-appear.delay-4 { transition-delay: 0.4s; }
