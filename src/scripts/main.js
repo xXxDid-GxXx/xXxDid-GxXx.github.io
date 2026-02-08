@@ -701,6 +701,8 @@ class Portfolio {
     try {
       // Submit form data to Formspree
       const formData = new FormData(this.form);
+      // Remove reCAPTCHA response so Formspree doesn't try to verify it server-side
+      formData.delete('g-recaptcha-response');
       const response = await fetch(formAction, {
         method: 'POST',
         body: formData,
