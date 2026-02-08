@@ -676,6 +676,15 @@ class Portfolio {
       return;
     }
 
+    // Check reCAPTCHA
+    if (typeof grecaptcha !== 'undefined') {
+      const recaptchaResponse = grecaptcha.getResponse();
+      if (!recaptchaResponse) {
+        this.showFormFeedback('Please complete the CAPTCHA', 'error');
+        return;
+      }
+    }
+
     // Get form action URL
     const formAction = this.form.getAttribute('action');
     if (!formAction || formAction.includes('YOUR_FORM_ID')) {
@@ -710,15 +719,21 @@ class Portfolio {
         // Reset form
         this.form.reset();
 
+        // Reset reCAPTCHA
+        if (typeof grecaptcha !== 'undefined') {
+          grecaptcha.reset();
+        }
+
         // Clear all field errors
         const inputs = this.form.querySelectorAll('.form-input');
         inputs.forEach((input) => this.clearFieldError(input));
       } else {
-        const data = await response.json();
-        if (data.errors) {
+        const data = await response.json().catch(() => null);
+        console.error('Formspree error:', response.status, response.statusText, data);
+        if (data && data.errors) {
           this.showFormFeedback(data.errors.map(e => e.message).join(', '), 'error');
         } else {
-          this.showFormFeedback('Something went wrong. Please try again.', 'error');
+          this.showFormFeedback(`Something went wrong (${response.status}). Please try again.`, 'error');
         }
       }
     } catch (error) {
