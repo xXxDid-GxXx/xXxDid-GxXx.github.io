@@ -676,13 +676,6 @@ class Portfolio {
       return;
     }
 
-    // Check reCAPTCHA
-    const recaptchaResponse = document.querySelector('.g-recaptcha-response');
-    if (recaptchaResponse && !recaptchaResponse.value) {
-      this.showFormFeedback('Please complete the reCAPTCHA verification', 'error');
-      return;
-    }
-
     // Get form action URL
     const formAction = this.form.getAttribute('action');
     if (!formAction || formAction.includes('YOUR_FORM_ID')) {
@@ -716,11 +709,6 @@ class Portfolio {
 
         // Reset form
         this.form.reset();
-
-        // Reset reCAPTCHA
-        if (typeof grecaptcha !== 'undefined') {
-          grecaptcha.reset();
-        }
 
         // Clear all field errors
         const inputs = this.form.querySelectorAll('.form-input');
