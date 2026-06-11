@@ -1,0 +1,25 @@
+/* Design tokens — Section 4.2 */
+:root {
+  /* Surface */
+  --color-paper: #FAFAF7;
+  --color-paper-deep: #F2EFE8;
+  --color-ink: #0A0A0A;
+  --color-ink-soft: #2A2A2A;
+
+  /* Accents */
+  --color-red: #D7263D;
+  --color-red-deep: #8B0E1E;
+  --color-yellow: #F5C518;
+
+  /* Per-case accents */
+  --case-healthcare: #2A5D7C;
+  --case-ai-orchestration: #4A2C6B;
+  --case-linear: #00C2A8;
+  --case-tax-ocr: #6B5B3A;
+  --case-glazd: #FF0033;
+  --case-ai-workflow: #1A1A1A;
+
+  /* Spacing */
+  --space-gutter: clamp(1rem, 4vw, 2.5rem);
+  --space-section: clamp(3rem, 10vh, 8rem);
+}

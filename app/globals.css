@@ -1,0 +1,27 @@
+@import "tailwindcss";
+@import "../styles/tokens.css";
+
+@theme inline {
+  --color-paper: var(--color-paper);
+  --color-paper-deep: var(--color-paper-deep);
+  --color-ink: var(--color-ink);
+  --color-ink-soft: var(--color-ink-soft);
+  --color-red: var(--color-red);
+  --color-red-deep: var(--color-red-deep);
+  --color-yellow: var(--color-yellow);
+
+  --font-display: var(--font-display);
+  --font-body: var(--font-body);
+  --font-hand: var(--font-hand);
+}
+
+body {
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-body), monospace;
+}
+
+*:focus-visible {
+  outline: 2px dotted var(--color-red);
+  outline-offset: 2px;
+}
