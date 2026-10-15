@@ -13,17 +13,119 @@ tools:
   - Figma
   - Linear
 accentColor: "#00C2A8"
-thumbnail: /images/cases/linear-marketplace/thumb.png
-heroImage: /images/cases/linear-marketplace/hero.png
+thumbnail: /images/cases/linear-marketplace/preview.jpg
+heroImage: /images/cases/linear-marketplace/nft-detail.png
 preview:
-  short: Extensions for the tool devs actually use.
+  short: Making crypto stop looking like a casino.
   description: |
-    Designed the marketplace and developer-facing surfaces for a Linear
-    integration ecosystem. Focused on making third-party extensions feel
-    native to Linear's minimalist aesthetic while giving developers
-    enough surface area to build meaningful products.
+    A crypto marketplace for NFTs and tokens. Learning blockchain UX from
+    scratch. Why every crypto product looks like a slot machine — and what
+    happens when you try to dignify one. Early-career work, looked at
+    honestly.
 ---
 
 # Linear Marketplace
 
-*Content coming in Phase 1.*
+## Where I was when this came in (intro)
+
+Early career. I thought I understood design. ==I had no idea what I didn't know.==
+
+That's the honest setup for this one. The version of me that worked on this project had the basics down — visual hierarchy, components, decent Figma chops — but I hadn't yet learned the thing that turns a designer into a senior designer, which is the slow accumulation of being wrong in interesting ways. I learned a lot of that here, and I learned more of it in the years after, looking back.
+
+The case is real. The work shipped. The narrator just wants to be clear he wouldn't make all the same calls now. That's not a bug. That's how careers work.
+
+## The brief (intro)
+
+A crypto company wanted a marketplace. NFTs and tokens. Standard enough — until you read the second paragraph of the brief, which said the marketplace also had to support ==selling tokens that had non-transferable clauses written into their smart contracts==.
+
+If that sentence didn't immediately set off an alarm, congratulations — you've never read a crypto whitepaper. Tokens often come with transfer restrictions baked into the contract. The marketplace's hook was that it would let you sell them anyway, presumably through some peer-to-peer escrow trick the engineers had worked out.
+
+I won't pretend I understood the legality of this when we started. I'm not sure I understand it fully now. What I understood was that the client wanted it built, and I had a year of design experience to figure out what that should look like.
+
+## What I didn't know about crypto
+
+![Connect Wallet modal over the marketplace](/images/cases/linear-marketplace/connect-wallet.png)
+
+Everything. I knew nothing about crypto going in. Not how blockchains worked, not what gas fees were, not why your wallet sometimes shows three different versions of the same coin, not why you can't transfer a token between chains without going through a bridge that might or might not eat your money.
+
+I knew none of this. I had to learn all of it just to draw the screens.
+
+The rough sequence of revelations:
+
+A token lives on a blockchain. Different tokens live on different blockchains. If you want to sell a token that lives on chain A using a marketplace built on chain B, you pay fees in chain B's currency, even if you don't own any. So you have to acquire some of chain B's currency first, which means another transaction, which means another fee. The fees compound. ==A user trying to sell a $20 NFT could realistically pay $15 in fees across three transactions to get it done.==
+
+And the wallet shows all of this. Every fee, every chain, every gas estimate, in raw hex-like numbers, with no translation. The user is expected to know what any of it means.
+
+## Why every crypto product looks like a slot machine
+
+![Calm NFT grid — browse view](/images/cases/linear-marketplace/nft-grid.png)
+
+This is why every crypto product looks like a slot machine.
+
+The UX has so much going on, in so many directions, that the only way to communicate "it's fine, trust us" is to add more lights and animations. The casino aesthetic isn't a style choice. It's a coping mechanism for fundamentally hostile information density. When the data underneath is incomprehensible, you compensate by making the surface feel exciting. ==Excitement masks confusion.== Slot machine logic, applied to financial software.
+
+Our job — the unspoken brief inside the actual brief — was to refuse this. ==To treat the user like a person who deserved to understand what was happening to their money.==
+
+## Big Solar
+
+![Token grid with a plain-language risk warning tooltip](/images/cases/linear-marketplace/token-warning.png)
+
+This project didn't happen in isolation. My company had an internal initiative called Big Solar — one of our employees had spun it up specifically to take on crypto sector work. The thesis: crypto products had universally awful design, and there was a real opportunity for a serious agency to come in and make them feel like real software instead of casinos with extra steps.
+
+I got pulled into Big Solar work during this period. Multiple crypto projects, multiple clients. Not all of them were glamorous — sometimes the work was a pure UX audit where we'd go screen by screen, mark every problem, score it, hand the client a document, and let them decide what to fix.
+
+That kind of work teaches you something the glossier projects don't. You learn what trust looks like in a UI, because crypto users have lost actual money to bad UX, and "looks trustworthy" isn't a vibe in this domain — ==it's a load-bearing feature==. Confirmation steps, plain-language summaries, warning states for irreversible actions, repeat-the-amount verifications for large transactions. None of it was novel. Banking apps had been doing this for two decades. The novelty was *applying* it to crypto, which had skipped the "design for users not losing their savings" phase entirely.
+
+## The thing that actually changed me on this project
+
+![NFT list view — the same offers, structured as a table](/images/cases/linear-marketplace/list-view.png)
+
+==Information architecture.==
+
+Sounds dry. Was the most important thing that happened to me as a designer in those years.
+
+Before this project, UX artifacts were something I made because the process said to make them. User flows, blueprints, IA maps, audits — I treated them as deliverables. Output. Things you produce to prove you did the work, then move on to the "real" design.
+
+The crypto marketplace forced a different relationship with them. The domain was too complicated to design by intuition. I couldn't open Figma and start drawing screens — I didn't know enough about what the screens needed to do, what lived next to what, what a user would expect to find where. So I did the IA work for real, not as ceremony. I sat with the client's reference marketplaces. I mapped what they had, where it lived, why it was confusing. I diagrammed our own structure, multiple times, until the second version was meaningfully better than the first.
+
+## The artifacts are the work
+
+![Token search filtered to UNI](/images/cases/linear-marketplace/token-search.png)
+
+And it worked. The IA work *was* the design work. By the time I opened Figma, half the decisions were already made — not because I'd guessed well, but because the artifacts had done their job.
+
+That's when it clicked: ==UX artifacts aren't proof you did the work.== They *are* the work. They're how you think, on paper, before you commit to pixels. ==Skip them and you design by vibes. Do them seriously and you design from understanding.==
+
+It sounds obvious written down. It wasn't obvious until I lived it. Every project since has been built on this — when to make an IA map, when to do an audit, when to skip both because the project doesn't need them. The discrimination of *when to use which artifact* is most of the seniority. Junior me made all of them, all the time, badly. Mid-career me makes the ones the project needs, when it needs them, and treats them as load-bearing.
+
+That muscle started on this project.
+
+## The actual design work
+
+![Create Offer form with the plain-language fee breakdown](/images/cases/linear-marketplace/create-offer.png)
+
+The client showed up with references. Other crypto marketplaces they wanted us to learn from. I looked at them honestly — most had information architecture problems so bad that "learn from" was probably the wrong verb. "Improve on" was more accurate.
+
+What we delivered consolidated what the references had spread across five tabs into two or three, with cleaner terminology and contextually hidden controls — surface the buttons when they matter, suppress them when they don't. The fees got their own treatment: a plain-language breakdown of why a user was paying what they were paying, and how it added up. Not "Gas: 0.0023 ETH" with no context. "You're paying X to do the trade and Y to move the token to your wallet. Total: Z."
+
+==Small changes. Big trust impact.== The kind of work that doesn't look impressive in a portfolio screenshot but actually matters in someone's hands.
+
+## What I'd do differently now
+
+![Edit NFT Key Offer form](/images/cases/linear-marketplace/edit-offer.png)
+
+Looking back, the work was solid for where I was. There are things I'd do differently. I'd push harder on the contract-skirting feature — ask more questions about who actually benefited from it, possibly refuse to design it if the answer wasn't satisfying. ==Junior me didn't push enough on briefs.== Junior me said yes a lot.
+
+I'd also obsess less about visual polish and more about decision architecture — which choices does the user actually have, and how do we make the consequential ones obvious without screaming about all of them equally.
+
+But the bones of the case still hold. We took a domain that defaults to "casino" and made it look like a real product. The IA was better than what the client came in with. The fees were legible. The trust signals were intentional. That part was right.
+
+## What this project taught me
+
+![Mobile My Assets screens](/images/cases/linear-marketplace/mobile-assets.png)
+
+==Working in a domain you don't understand is uncomfortable, then it's terrifying, then it's the most useful thing in the world.== You don't have any priors. You can't fall back on "the standard pattern" because you don't know what the standard pattern is. You have to actually look at the problem.
+
+That's a muscle. I built a lot of it on this project. Every project since has been easier because of it.
+
+I still don't trade crypto. But I know what's broken about it, and I know what fixing it looks like. That's the part that stayed.

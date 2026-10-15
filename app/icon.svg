@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- White "H" on a black circle. Drawn as shapes (not text) so it renders the
+       same in every browser and stays crisp at 16px. -->
+  <circle cx="32" cy="32" r="32" fill="#000"/>
+  <path fill="#fff" d="M20 16h7v13h10V16h7v32h-7V35H27v13h-7z"/>
+</svg>

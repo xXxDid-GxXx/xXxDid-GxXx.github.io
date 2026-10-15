@@ -14,17 +14,92 @@ tools:
   - Claude
   - Python
 accentColor: "#6B5B3A"
-thumbnail: /images/cases/tax-ocr/thumb.png
-heroImage: /images/cases/tax-ocr/hero.png
+thumbnail: /images/cases/tax-ocr/preview.jpg
+heroImage: /images/cases/tax-ocr/zero-state.png
+heroTitle: [Tax OCR, Document, Review]
+outroVideo: /videos/tax-ocr-outro.mp4
 preview:
-  short: AI doing the boring parts of tax season.
+  short: Replacing the boring parts of tax season.
   description: |
-    A document review platform that uses OCR + LLM extraction to process
-    thousands of tax documents per day. Designed the review interface so
-    accountants can verify AI-extracted data at 10× their previous speed
-    without sacrificing accuracy.
+    Replacing folders and Excel with a real tax review platform. Six weeks
+    instead of six, because of AI. And the honest story of what AI actually
+    sped up — and what it didn't.
 ---
 
-# Tax OCR Document Review
+## Before we got there (intro)
 
-*Content coming in Phase 1.*
+A US tax review platform. The kind of software where a person sits down with a screen full of documents and has to decide, one by one, whether the numbers add up.
+
+Before us, they were doing it in Excel and folders. Actual folders, on a shared drive, with filenames like `TAX_REVIEW_FINAL_v3_REAL_v2.xlsx`. The pain was so thorough nobody bothered explaining it — they just opened the screen share and let it speak.
+
+The job: ==build the thing that replaces the folders==.
+
+## Who was in the room (intro)
+
+Three of us. A project manager who handled the client and the calls. Me. And one other designer.
+
+We were both in the company's top-10 AI initiative — meaning we'd been using Claude and other tools more aggressively than anyone else internally, for long enough that the company had noticed and put us in a small group to figure out what AI-first design actually looked like in practice. ==This project was where the theory got tested.==
+
+It was also, though I didn't know it yet, ==my last project as a regular designer==. Right after delivery, the company promoted me into product owner. The AI initiative had paid for itself.
+
+## The honeymoon
+
+![Tax OCR main review screen](/images/cases/tax-ocr/main-screen.png)
+
+The first week felt like cheating.
+
+We'd talk through a problem, throw it at AI, get fifteen directions back inside an hour, narrow to three, push further, narrow to one. ==Ideation that used to eat days now ate afternoons.== We were generating options faster than we could evaluate them.
+
+I remember thinking: this is what people meant by 10x.
+
+## The hangover
+
+![The client design-system components rebuilt in Figma](/images/cases/tax-ocr/components.png)
+
+The client wanted Figma. Of course they wanted Figma — every client wants Figma, with their design system, their components, their tokens. Reality showed up on schedule.
+
+AI gives you a mockup. The mockup is brilliant. The mockup is also raster, or HTML, or a screenshot in a slide, or sometimes just a description of a layout so good you have to talk yourself out of cloning it pixel-for-pixel. None of it is in Figma. None of it knows your client's design system.
+
+So you redraw it. Frame by frame. Component by component. Every spacing token converted. Every shadow re-derived. Every state — hover, focused, disabled, loading, error, pending — built by hand in the client's library because that's what the design system requires.
+
+==We saved a week on ideation. We spent it pushing pixels back into Figma.== The math basically broke even.
+
+The honest take: ==AI didn't make us faster overall on this project.== It made the *good parts* faster and the *boring parts* worse, because we had more good ideas to translate, which meant more boring translation work. The pink glasses came off fast.
+
+## The thing that was actually hard
+
+![The document sidebar tree in its default open state](/images/cases/tax-ocr/default-open-state.png)
+
+==The sidebar tree. That's where the case lived.==
+
+Every tax review is a stack of documents in folders. Some are downloaded, some are pending. Some have been reviewed, some signed off, some both, some neither, some force-signed without review — that's a thing, reviewers can skip the review step if they want, which has its own status. And it's role-dependent: one person might be both reviewer and signer, or two different people, or sometimes the system doesn't know yet.
+
+The sidebar had to show all of that. Hierarchy and status, on top of role, on top of doc state, on top of folder-level rollups. Without becoming the spaghetti diagram that ate the user.
+
+The thing that worked: ==separating status from hierarchy as orthogonal axes==. The tree shows where things live. The status indicators ride alongside. Roles get their own affordance, not a fourth color. Pending documents look pending, not like a special kind of reviewed. Once we stopped trying to encode everything in one visual language, the tree got readable.
+
+## What got built
+
+![Bulk selection for review and sign-off](/images/cases/tax-ocr/bulk-selection.png)
+
+Bulk actions for review and sign-off, because nobody wants to click four hundred documents one at a time.
+
+A toolbar with the things tax reviewers actually use — stamps, zoom, a calculator — sitting where their hands already were.
+
+And Work Paper AI, the integration that lets reviewers ask the system questions about the document they're looking at instead of cross-referencing six other tabs. The AI in this project lives in the product, not just the process.
+
+==We delivered in three or four weeks. Would have been six without AI.== The savings were real but not where I expected — ==research and ideation collapsed; mockup execution didn't==.
+
+## The deeper truth
+
+![The success screen after a completed review](/images/cases/tax-ocr/success-screen.png)
+
+==You can't fake the deep work.==
+
+AI gave us fifteen good directions. We still had to choose the right one. The choosing didn't get any easier. That's still the job. It will always be the job. Whatever the next tool is, the next one after that, the one we don't have a name for yet — none of them get you out of looking at the problem and deciding what matters.
+
+The honeymoon ends. The work resumes.
+
+The client got their tax review platform. The Excel folders died. And I got promoted out of being the person who has to redraw AI mockups in Figma frame by frame.
+
+So in a sense: ==AI did get me out of the work. Just not the way I expected.==

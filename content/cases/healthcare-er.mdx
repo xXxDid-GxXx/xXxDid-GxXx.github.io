@@ -2,27 +2,139 @@
 slug: healthcare-er
 order: 0
 title: Healthcare ER Platform
-role: Senior Product Designer
+role: AI Product Owner
 company: Trinetix
-year: 2023
-timeline: 2022 – 2023
+year: 2026
+timeline: 2026 – Present
 type: client
-status: shipped
+status: wip
 nda: true
 tools:
+  - Claude
+  - Google AI Studio
   - Figma
-  - Principle
 accentColor: "#2A5D7C"
-thumbnail: /images/cases/healthcare-er/thumb.png
-heroImage: /images/cases/healthcare-er/hero.png
+thumbnail: /images/cases/healthcare-er/preview.jpg
+heroImage: /images/cases/healthcare-er/kiosk-welcome.png
 preview:
   short: Redesigning triage under pressure.
   description: |
-    A platform redesign for emergency room staff at a major US hospital network.
-    Reduced triage documentation time by 40% and cut critical-alert missed rate
-    to near zero. Built under NDA — details available on request.
+    Patient intake and physician referral flows for a US emergency room
+    network. Owned the project as AI product owner in a three-person
+    self-contained unit — discovered, designed, prototyped, sold. Now in
+    delivery. Three people, with AI, shipping what used to take fifteen.
 ---
 
-# Healthcare ER Platform
+## What this actually is (intro)
 
-*Content coming in Phase 1.*
+I'm the AI product owner on this project. Right now, as I write this. It's live work.
+
+The client is a US emergency room network. They wanted to ==move their patient intake and referral flows out of Google Forms, Power Apps, and paper, into a real product== — one that could talk to their EMR systems, cut manual data entry, and stop losing information between the front desk and the physicians. Two flows: patient intake (people arriving at the ER, or pre-registering online), and physician referral (doctors at other clinics sending patients to this ER because they don't have the expertise or the equipment).
+
+That's the brief. The reality is more interesting.
+
+## The team
+
+![Front desk patient queue — every patient from expected to discharge](/images/cases/healthcare-er/front-desk-queue.png)
+
+Three people.
+
+Me — product owner. Client-facing. Driving discovery, presentations, design. Effectively also the BSA. Effectively also the design lead. When the client needs someone on a call, it's me.
+
+An architect — running the engineering strategy. The big-picture systems thinking, database design, integration architecture.
+
+A developer — building the actual code. Frontend, feature work, the day-to-day making.
+
+That's the whole team. On a healthcare product, for a US client, delivering flows that ambulate real patients through a real ER.
+
+My company calls this structure a "self-contained unit." ==Three people, given autonomy to move fast==, expected to ship without the usual layers of PMs and ADs and design leads that slow enterprise consulting to a crawl. It works because everyone in it is senior enough to make decisions without a committee — and ==because AI does the compression that used to require a bigger team==.
+
+I'm the product owner because I was part of the company's AI initiative. When the healthcare vertical needed a small unit to move quickly, a few of us got pulled in. This is that project.
+
+## What was there before
+
+![Adding a walk-in — scan the ID to prefill instead of retyping](/images/cases/healthcare-er/add-patient.png)
+
+Google Forms. Power Apps. Some very creative Excel usage.
+
+The old flow: patient fills out a form (paper, or Google Form on a tablet), front desk PSA reads the form, front desk PSA opens the client's EMR system in another window, ==front desk PSA manually re-types every field into the EMR==. Name, DOB, insurance, symptoms, medications, the works. Every field, one at a time, from one screen to another.
+
+At scale, this is where the mistakes come from. Typos in insurance numbers. Skipped fields in the reason-for-visit. Names spelled differently across systems, creating duplicate patient records. Referrals from outside clinics arriving as PDFs or faxes or, on bad days, phone calls — with data that had to be transcribed by hand.
+
+This isn't unusual for healthcare. It's how most emergency rooms actually run. ==The tech behind the counter is decades behind the tech in the CT scanner ten feet away.== Our job was to close that gap for this client.
+
+## What we're building
+
+![Patient pre-registration — the About You step with a QR code to continue on your phone](/images/cases/healthcare-er/intake-about-you.png)
+
+Two flows, multiple entry points, multiple roles. I'll spare you the exhaustive list, but the shape:
+
+**Patient side:** pre-registration online before you leave the house. ==OCR scanning for insurance cards and IDs== so you don't have to type twenty digits into a form. Voice input for reason-for-visit — talk into the field instead of typing, because if you're going to the ER you're probably not in a great state for typing. ==Geolocation-based check-in== so once you're close to the clinic, you tap a button and you're checked in — no walking up to the front desk, no waiting behind the family whose kid just threw up.
+
+## Every role gets its own screen
+
+![Check-in by ID scan — confirm the details read from the license](/images/cases/healthcare-er/scan-check-in.png)
+
+**Physician side (referrers):** a real referral form for outside clinicians. Structured, not free-text. ==Sends a proper record into the ER's system instead of a fax.==
+
+**Front desk PSA:** a dashboard showing every patient in the pipeline — pre-registered, en route, arrived, checked in. The bridge to the EMR (more on this below).
+
+**ER physicians:** a dashboard with the full patient context, so by the time the patient reaches an exam room, the physician isn't reading a Google Form printout.
+
+**Client business development:** an analytics dashboard tracking flow-level KPIs — where patients drop off, how long each stage takes, which entry points bring the highest volume.
+
+Each of these is a different application, each with different UI needs, each shipping in phases.
+
+## The bridge to the EMR
+
+![Patient detail — registration readiness and Send to Paster](/images/cases/healthcare-er/patient-detail.png)
+
+This is the piece I want to talk about, because it's ==the smartest thing we've shipped on this project==.
+
+The endgame is direct API integration with the client's EMR systems — Epic, Cerner, whatever they're using. The problem: getting API access from enterprise EMR vendors is slow. Weeks of paperwork, security reviews, procurement conversations. And the client's security team wasn't comfortable opening that door yet — the value-at-risk from a bad integration is enormous when the data is patient records. We couldn't wait, and arguably we shouldn't push them to.
+
+So we built a bridge. The first version was simple: when a PSA clicks a button on our dashboard, all the patient's data gets copied into a small floating window that stays on top of every other window. The PSA opens their EMR in a second window and copy-pastes each field across. ==Two clicks per field instead of thirty keystrokes.==
+
+## Then we made it smarter
+
+![Visit information laid out in the EMR's own fields and order](/images/cases/healthcare-er/visit-info.png)
+
+We mapped the input order of the EMR's forms — which field comes first, which Tab key moves you where, the whole keyboard sequence a PSA would walk through if they were filling the form by hand. Then we built a small automation inside our application that uses that map. The PSA opens the EMR, clicks into the first field, hits one button in our app — and the app walks through the sequence itself: paste, Tab, paste, Tab, paste, Tab, through every field in the right order.
+
+Effectively, ==we built a bot that pretends to be a PSA typing into the EMR==. From the EMR's perspective, it's just keyboard input — ==no API, no integration, no security review==. From the PSA's perspective, patient data moves from our dashboard into the EMR with two button presses and no manual work.
+
+It's not elegant. It's a bridge. And it does exactly what full API integration would do, without the API integration, in a form the client's security team is comfortable with. The client noticed. The bridge is what got them convinced the rest of the project was going to work — and in a lot of ways, the bridge is better than the "real" solution would have been, because it ships now and doesn't ask the client to open their EMR to external systems.
+
+That's senior thinking. Not "we'll build the ideal solution eventually" — but "here's what we can ship *now* that solves the actual pain, in a way the client can actually accept."
+
+## What's hard about this
+
+![Discharge with the full set of dispositions](/images/cases/healthcare-er/discharge.png)
+
+The team structure. When there are only three of you and no formal BSA and no formal design lead and no formal PM, all of those roles fall on somebody. On this project, most of them fall on me.
+
+That was uncomfortable at the start. The first weeks felt like standing in a room with no chairs — where do you sit? Nobody was going to hand me the brief. Nobody was going to tell me what artifacts to make. Nobody was going to run the client calls if I didn't. I had to figure out what the project actually needed and then build the systems to deliver it, from scratch, on the fly, with a client watching.
+
+The good news: this is exactly the kind of ambiguity where AI is force-multiplying. Every artifact I make — journey maps, IA diagrams, screen flows, requirements docs, client presentations — starts with a conversation with Claude or Google AI Studio. I describe what I need, I get a scaffold back, I sharpen it, I ship it. What used to be days of research and drafting is hours of thinking and refining.
+
+==Without AI, this project would need at least five more people.== With it, three of us are shipping healthcare software the client's happy with. That's the actual proof of the AI-first thesis — not that AI makes designers faster, but that AI makes *self-contained units* possible where they wouldn't have been before.
+
+## Where we are
+
+![Patient records — signed consents and uploaded documents with review status](/images/cases/healthcare-er/patient-records.png)
+
+==The prototype got approved. Client bought it.==
+
+That means the three-person self-contained unit did its job: we discovered the problem, scoped the solution, prototyped it, proved it, and sold it. The project is now in delivery — a larger team is building the production version, and I'm consulting with them on every product decision.
+
+I've just finished the WBS and the time estimates with the delivery team. From here, my role shifts: less building, more consulting, more product decisions, more making sure the delivery doesn't lose the design and product thinking that got us here.
+
+That's the shape of the win. Not "we shipped the thing" — the thing isn't shipped yet. The win is that the client said yes, the project got funded, and a bigger team is now building what the three of us designed.
+
+The project is real. The PSAs will stop manually re-typing patient records soon. The ER will route patients with fewer errors than paper forms allowed. And ==three people, with AI, took it from Google Forms to approved production prototype==.
+
+That's the work.
+
+That's the case.
+
+That's what I do now.

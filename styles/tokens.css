@@ -1,15 +1,18 @@
 /* Design tokens — Section 4.2 */
 :root {
   /* Surface */
-  --color-paper: #FAFAF7;
-  --color-paper-deep: #F2EFE8;
-  --color-ink: #0A0A0A;
-  --color-ink-soft: #2A2A2A;
+  --color-bg: #FAFAFA;
+  --color-bg-deep: #F2F2F0;
+  --color-divider: #E5E5E2;
 
-  /* Accents */
-  --color-red: #D7263D;
-  --color-red-deep: #8B0E1E;
-  --color-yellow: #F5C518;
+  /* Dark canvas + white text boxes */
+  --color-bg-dark: #0E0E0E;
+  --color-paper: #FFFFFF;
+
+  /* Ink */
+  --color-ink: #0A0A0A;
+  --color-ink-soft: #4A4A4A;
+  --color-ink-muted: #8A8A8A;
 
   /* Per-case accents */
   --case-healthcare: #2A5D7C;
@@ -20,6 +23,8 @@
   --case-ai-workflow: #1A1A1A;
 
   /* Spacing */
-  --space-gutter: clamp(1rem, 4vw, 2.5rem);
-  --space-section: clamp(3rem, 10vh, 8rem);
+  --space-gutter: clamp(1.5rem, 5vw, 4rem);
+  --space-section: clamp(4rem, 12vh, 10rem);
+  --space-tight: 0.5rem;
+  --space-loose: 2rem;
 }

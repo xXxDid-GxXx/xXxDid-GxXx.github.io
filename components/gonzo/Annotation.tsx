@@ -1,17 +1,40 @@
+"use client";
+
+import { useId } from "react";
 import { cn } from "@/lib/utils";
 
 type Props = {
   children: React.ReactNode;
+  rotation?: number;
+  color?: string;
   className?: string;
-  rotation?: number; // degrees, -4 to 4
+  style?: React.CSSProperties;
 };
 
-export function Annotation({ children, className, rotation = -1 }: Props) {
+// Derives a stable float in [-range, range] from a string seed.
+// Uses useId() so the value is identical on SSR and client — no hydration mismatch.
+function stableRandom(seed: string, range: number): number {
+  let h = 0;
+  for (let i = 0; i < seed.length; i++) {
+    h = (h * 31 + seed.charCodeAt(i)) & 0xffff;
+  }
+  return (h / 0xffff) * range * 2 - range;
+}
+
+export function Annotation({
+  children,
+  rotation,
+  color = "var(--color-ink)",
+  className,
+  style,
+}: Props) {
+  const id = useId();
+  const deg = rotation !== undefined ? rotation : stableRandom(id, 3);
+
   return (
     <span
-      className={cn("font-hand text-[var(--color-red)] text-sm absolute", className)}
-      style={{ transform: `rotate(${rotation}deg)` }}
-      aria-hidden="true"
+      className={cn("font-hand font-bold text-lg leading-none select-none", className)}
+      style={{ transform: `rotate(${deg}deg)`, color, display: "inline-block", ...style }}
     >
       {children}
     </span>

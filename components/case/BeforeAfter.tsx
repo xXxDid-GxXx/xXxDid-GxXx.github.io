@@ -21,13 +21,13 @@ export function BeforeAfter({ before, after, beforeAlt = "Before", afterAlt = "A
       <div className="flex gap-2 mt-2">
         <button
           onClick={() => setShowAfter(false)}
-          className={`text-xs font-body px-2 py-1 border ${!showAfter ? "bg-[var(--color-ink)] text-[var(--color-paper)]" : ""}`}
+          className={`text-xs font-body px-2 py-1 border ${!showAfter ? "bg-[var(--color-ink)] text-[var(--color-bg)]" : ""}`}
         >
           Before
         </button>
         <button
           onClick={() => setShowAfter(true)}
-          className={`text-xs font-body px-2 py-1 border ${showAfter ? "bg-[var(--color-ink)] text-[var(--color-paper)]" : ""}`}
+          className={`text-xs font-body px-2 py-1 border ${showAfter ? "bg-[var(--color-ink)] text-[var(--color-bg)]" : ""}`}
         >
           After
         </button>

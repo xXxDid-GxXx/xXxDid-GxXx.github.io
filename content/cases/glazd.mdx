@@ -15,20 +15,117 @@ tools:
   - Google AI Studio
   - React Native
 accentColor: "#FF0033"
-thumbnail: /images/cases/glazd/thumb.png
-heroImage: /images/cases/glazd/hero.png
+thumbnail: /images/cases/glazd/preview.jpg
+heroImage: /images/cases/glazd/hero-logo.png
 preview:
   short: Match on what you actually like, not how you look.
   description: |
-    A matching app that connects people on actual TikTok behavior — what they
-    like and save — rather than curated bios. Conversations start anonymous;
-    identity is earned. Live on Google Play. Pixelated dark aesthetic that
-    reinforces the anonymous-first product concept.
+    Anonymous matching based on TikTok behavior. Built with my best friend.
+    Shipped to Google Play. Frozen at sea — literally, he became a sailor.
+    The honest story of a side project that almost was, and might still be.
 links:
+  - label: PWA
+    href: https://glazd-1a51d.web.app/
+
   - label: Google Play
-    href: https://play.google.com/store/apps/details?id=com.glazd
+    href: https://play.google.com/store/apps/details?id=com.greedmitya.glazd
+
 ---
 
 # Glazd
 
-*Content coming in Phase 1.*
+## Before there was a product (intro)
+
+I moved to Poland from Ukraine. I'm one of a few million people doing roughly that, give or take. The part nobody warns you about isn't the bureaucracy or the language or the weather. ==It's that you can't make friends.==
+
+Not real ones. Not the kind where you end up at someone's kitchen at 2am arguing about something neither of you actually care about. The apps don't help. The apps are for dating, which is to say the apps are for sex, which is to say ==they sort people by face and not by the contents of their head==. Networking apps are worse — LinkedIn-coded, performative, full of people pretending to want coffee.
+
+But the loneliness wasn't the whole problem. The other half was this:
+
+## The other half (intro)
+
+You can know someone for years — actual friends, people you trust — and ==have no idea about half of who they are==. There are interests they don't bring up because they think you wouldn't get it. There are sides of them they keep folded away because the moment to share them never quite arrives. And the same is true of you. The friendship is real, the gap is also real, and nobody knows how to bridge it without it feeling forced.
+
+You sit there knowing you'd connect with this person on a thing they love, and they'd connect with you on a thing you love, and neither of you ever brings it up because the social cost of "by the way, here's a weirder part of me" is too high.
+
+## The old internet
+
+I wanted the old internet back. ICQ. AIM. The forums and chat rooms where you'd talk to someone in a different country for six months without knowing what they looked like, and somehow that was the most honest you'd ever been with anyone — because ==anonymity made it cheap to be weird==. There was no reputation on the line.
+
+The old internet was anonymous and people were more themselves for it. Take away the face and the bio and the LinkedIn headline and what's left is who you actually are. Naked, in the only sense that actually matters. And not just to strangers — sometimes the people you most want to be naked with are the ones you've already known for years.
+
+## The hypothesis
+
+![Profile before any TikTok data is uploaded — the empty DOMINANCE.chart](/images/cases/glazd/profile-empty-state.png)
+
+Around the same time, I read that TikTok had become the app users trusted *most* — more than friends, more than therapists, more than their own taste. The algorithm understood them better than they understood themselves. People said this with a kind of awe.
+
+And it clicked: when you're scrolling TikTok, you're not curating. You're not performing. You're just being. The videos you save, the ones you stop on, the ones you share — that's data that nobody, including you, edits. ==It's the closest thing to a soul-scan a tech company has ever built.==
+
+So: what if you matched people on *that* instead of on photos?
+
+That became Glazd. ==Anonymous matching based on TikTok behavior. No photos. No bios.== Pick whatever name you want. The only thing the other person knows about you is what city you're in. Everything else — whether you click, whether you stay anonymous, whether you ever meet — that you earn.
+
+## Who built it
+
+![Glazd Android welcome screen](/images/cases/glazd/android-welcome.webp)
+
+Me and my best friend. He took the engineering and backend; I took product, design, and the founder-shaped work that doesn't have a name. ==We declared ourselves founders one afternoon and started building the next morning.==
+
+The excitement was real. First time using AI on something that was actually mine, not a client's. The design came together fast. The idea felt solid. The split of roles worked — he was deep in data flows while I was sketching screens. We had momentum.
+
+## The Google Play problem
+
+![Discover screen — people online now, by interest](/images/cases/glazd/discover.webp)
+
+Two weeks. That's how long Google Play takes to review a release, which means every iteration on the testing track costs two weeks of calendar time. Which means ==MVP scope had to be ruthless.== We weren't shipping a finished product — we were shipping just enough to validate that the idea wasn't insane.
+
+## The App Store problem
+
+![The Glazd PWA running in a mobile browser](/images/cases/glazd/pwa-welcome.png)
+
+The other half of the launch was iOS, and iOS is its own kind of expensive. A developer account costs money. Then you go through the review process, which is more involved than Google Play and significantly more opinionated about what your app does and why.
+
+We were two people. We hadn't validated the idea. Spending the money and weeks on App Store before knowing if anyone wanted Glazd felt like setting cash on fire.
+
+So we made the call: skip App Store for now. ==Ship a Progressive Web App instead.== iOS users get it through their browser — installable, works offline, looks close enough to a native app that most people won't notice. Not as good as a real iOS app, but real enough to test the hypothesis on both platforms without doubling our launch overhead.
+
+The plan: once Google Play is live, once TikTok API access is real, once we have any signal that people want this — *then* we pay for the developer account and build a proper iOS app. ==Earn the App Store the same way you earn anything else, by proving it's worth doing.==
+
+## The TikTok problem
+
+![Profile with the TikTok taste dominance chart](/images/cases/glazd/profile-taste-chart.webp)
+
+The harder issue: we needed TikTok data, and TikTok doesn't hand out API keys to apps that haven't shipped. Classic chicken-and-egg — ==you can't get the keys without a live app, you can't build the live app without the keys==.
+
+The workaround was ugly. We told users to download their TikTok data manually, then upload it to Glazd. Nobody was going to do this. We knew nobody was going to do this. It was a test flag — a placeholder that let us ship something real to Google Play so we could then apply to TikTok with a working product to point at.
+
+We released. ==First submission, approved.== (Small miracle.) Live on Google Play, available as a PWA for everyone else. I built the TikTok API demo, sent it in, got the response: proceed to sandbox. Build the integration there first, prove it works, then we'll talk about production access.
+
+## Where we are now
+
+![User profile with match score and shared interests](/images/cases/glazd/match-profile.webp)
+
+This is where the story stops being a triumph and starts being a real story.
+
+My co-founder works as a sailor — actual ocean, actual ship. He went to sea. The project paused. ==Not killed, paused.== The kind of pause where you don't open the repo for three months and then feel guilty when you do.
+
+The Google Play release is still live. The PWA is still live. The TikTok sandbox is still waiting. I'm planning to come back to it — finish the sandbox integration, get the API access, run a real test cohort, see if the hypothesis holds when the data is real.
+
+Will I? Probably. We'll see.
+
+## What I learned anyway
+
+![Settings — safety, legal and privacy documents](/images/cases/glazd/settings.webp)
+
+Even paused, Glazd taught me more than most shipped projects. How to scope an MVP when every iteration costs two weeks. How to pick PWA over native when the business hasn't earned native yet. How to write a privacy policy that doesn't lie. How to design for an aesthetic — pixelated, dark, old-internet — that signals the product's position before a user reads a single word. How to talk to platforms about API access without sounding like an idiot. How to be a founder without a title.
+
+And the thing I didn't expect: that ==being honest about what you're building, instead of performing certainty, makes people more likely to download it==. The pitch was always "I don't know if this will work but I want it to exist." That turned out to be a better pitch than confidence.
+
+## Naked, still
+
+![An anonymous chat between two matched users](/images/cases/glazd/chat.webp)
+
+The product's core idea is that ==anonymity makes people more themselves==. The honest version of this case study is the same bet. You don't get points for pretending Glazd is a finished triumph. It's not. It's a thing I made with a friend, that's frozen at the moment, that I might unfreeze, that taught me more than most things in my career so far.
+
+That's the case. That's the work. That's where it stands.

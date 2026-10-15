@@ -1,0 +1,82 @@
+---
+# ─────────────────────────────────────────────────────────────────────────────
+# CASE TEMPLATE — copy this file to content/cases/<slug>.mdx and fill it in.
+# Files starting with "_" are never published, so this one stays hidden.
+#
+# Images go in   public/images/cases/<slug>/
+# Videos go in   public/videos/
+# Paths below start with "/" and skip "public", e.g. /images/cases/my-case/hero.png
+# ─────────────────────────────────────────────────────────────────────────────
+
+slug: my-case                 # must match the file name (my-case.mdx)
+order: 9                      # position on the wheel (0 = first)
+title: My Case Title
+subtitle: Optional one-liner  # optional — shown under "next case" links
+role: Product Designer
+company: Company Name
+year: 2026
+timeline: 2025 – 2026
+type: client                  # client | own-product | process
+status: shipped               # live | shipped | wip | archived
+nda: false
+tools:
+  - Figma
+accentColor: "#6B5B3A"        # hover / highlight colour for this case
+
+thumbnail: /images/cases/my-case/preview.jpg   # wheel card image
+thumbnailPosition: center 50%                  # optional — part of the wheel image to keep
+                                               # in view (0% = top, 100% = bottom)
+heroImage: /images/cases/my-case/hero.png      # big image at the top of the case
+heroTitle: [My Case, Title]                    # optional — title split over lines
+outroVideo: /videos/my-case.mp4                # optional — video at the end
+                                               # (falls back to the default video)
+preview:
+  short: Short hero line shown on the wheel.
+  description: |
+    Two or three sentences. Shown on the wheel and under the case's hero title.
+---
+
+<!--
+HOW THE PAGE IS BUILT FROM THIS FILE
+
+  ## Heading (intro)    → intro panel. Up to two; the first is dark,
+                           the second is light and is revealed by a wipe.
+                           Delete them both to skip straight to the slides.
+
+  ## Heading            → a slide. One per section, as many as you like.
+
+  ![Alt text](/images/cases/my-case/screen.png)
+                         → the slide's image. Put it on its own line inside the
+                           section. Leave it out for a text-only slide.
+
+  Blank line            → new paragraph.
+  ==highlight==         → marker highlight for the key line of a section.
+  *italic*  **bold**  `mono`  [link](https://…)   → inline formatting.
+
+Missing images or videos never break the page: a slide without a found image
+becomes a text slide, and a missing video falls back to the default one.
+-->
+
+## The context (intro)
+
+What was the situation before you arrived? One to three short paragraphs.
+
+## The team (intro)
+
+Who was involved and what was your role.
+
+## The problem
+
+![Screen showing the problem](/images/cases/my-case/problem.png)
+
+What was hard, and why it mattered.
+
+## What we built
+
+![The final design](/images/cases/my-case/final.png)
+
+The solution, and the decisions behind it.
+
+## What I learned
+
+A text-only slide — no image line, so the text takes the full width.

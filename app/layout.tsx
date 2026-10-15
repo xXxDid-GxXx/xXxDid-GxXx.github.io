@@ -1,33 +1,35 @@
 import type { Metadata } from "next";
-import { Instrument_Serif, JetBrains_Mono, Caveat } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
 
-const instrumentSerif = Instrument_Serif({
-  weight: ["400"],
-  style: ["normal", "italic"],
+// Bricolage Grotesque — variable font, weight 200–800 (display voice)
+const bricolageGrotesque = localFont({
+  src: "../public/fonts/bricolage-grotesque-variable.woff2",
   variable: "--font-display",
-  subsets: ["latin"],
   display: "swap",
+  weight: "200 800",
 });
 
-const jetbrainsMono = JetBrains_Mono({
-  weight: ["400", "500", "700"],
+// JetBrains Mono — variable font, weight 100–800 (body / typewriter voice)
+const jetbrainsMono = localFont({
+  src: "../public/fonts/jetbrains-mono-variable.woff2",
   variable: "--font-body",
-  subsets: ["latin"],
   display: "swap",
+  weight: "100 800",
 });
 
-const caveat = Caveat({
-  weight: ["400", "700"],
+// Caveat — weight 700 only (marginalia / hand-drawn voice)
+const caveat = localFont({
+  src: "../public/fonts/caveat-700.woff2",
   variable: "--font-hand",
-  subsets: ["latin"],
   display: "swap",
+  weight: "700",
 });
 
 export const metadata: Metadata = {
-  title: "Hlib Didkovskyi — Senior Product Designer",
+  title: "Hlib Didkovskyi — Product Designer & Product Owner",
   description:
-    "Portfolio of Hlib Didkovskyi, Senior Product Designer specializing in AI-first workflows and product design.",
+    "Portfolio of Hlib Didkovskyi, Product Designer and Product Owner.",
 };
 
 export default function RootLayout({
@@ -38,9 +40,9 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${instrumentSerif.variable} ${jetbrainsMono.variable} ${caveat.variable} h-full antialiased`}
+      className={`${bricolageGrotesque.variable} ${jetbrainsMono.variable} ${caveat.variable} h-full antialiased`}
     >
-      <body className="min-h-full">{children}</body>
+      <body className="min-h-full" suppressHydrationWarning>{children}</body>
     </html>
   );
 }

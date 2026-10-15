@@ -2,26 +2,92 @@
 @import "../styles/tokens.css";
 
 @theme inline {
-  --color-paper: var(--color-paper);
-  --color-paper-deep: var(--color-paper-deep);
+  --color-bg: var(--color-bg);
+  --color-bg-deep: var(--color-bg-deep);
+  --color-divider: var(--color-divider);
   --color-ink: var(--color-ink);
   --color-ink-soft: var(--color-ink-soft);
-  --color-red: var(--color-red);
-  --color-red-deep: var(--color-red-deep);
-  --color-yellow: var(--color-yellow);
+  --color-ink-muted: var(--color-ink-muted);
 
   --font-display: var(--font-display);
   --font-body: var(--font-body);
   --font-hand: var(--font-hand);
 }
 
+/* Fluid type scale — kept in a NON-inline @theme block so each `text-*` utility
+   references var(--text-*) and we can raise the values on large screens via the
+   media query below. Below 1440px every size scales with the viewport between a
+   mobile floor and a desktop ceiling via clamp(min, preferred, max); small text
+   barely moves (kept readable on phones), headings scale harder. */
+@theme {
+  --text-xs: clamp(0.72rem, 0.69rem + 0.15vw, 0.8rem);
+  --text-sm: clamp(0.82rem, 0.78rem + 0.2vw, 0.95rem);
+  --text-base: clamp(0.92rem, 0.86rem + 0.3vw, 1.05rem);
+  --text-lg: clamp(1.05rem, 0.97rem + 0.4vw, 1.2rem);
+  --text-xl: clamp(1.15rem, 1rem + 0.6vw, 1.4rem);
+  --text-2xl: clamp(1.35rem, 1.1rem + 1vw, 1.7rem);
+  --text-3xl: clamp(1.6rem, 1.25rem + 1.6vw, 2.1rem);
+  --text-4xl: clamp(1.9rem, 1.4rem + 2.2vw, 2.6rem);
+  --text-5xl: clamp(2.3rem, 1.6rem + 3.2vw, 3.4rem);
+}
+
+/* Large screens (2K and up): the clamp ceilings above are hit around ~1200px,
+   so on a 1440px+ monitor text stops growing and reads small. Past 1440px each
+   size keeps scaling up to a roomier ceiling at ~2560px. The lower bound of each
+   clamp equals its sub-1440 ceiling, so the scale is continuous at 1440 (no jump). */
+@media (min-width: 1440px) {
+  :root {
+    --text-xs: clamp(0.8rem, 0.61rem + 0.21vw, 0.95rem);
+    --text-sm: clamp(0.95rem, 0.76rem + 0.21vw, 1.1rem);
+    --text-base: clamp(1.05rem, 0.79rem + 0.29vw, 1.25rem);
+    --text-lg: clamp(1.2rem, 0.88rem + 0.36vw, 1.45rem);
+    --text-xl: clamp(1.4rem, 1.01rem + 0.43vw, 1.7rem);
+    --text-2xl: clamp(1.7rem, 1.19rem + 0.57vw, 2.1rem);
+    --text-3xl: clamp(2.1rem, 1.33rem + 0.86vw, 2.7rem);
+    --text-4xl: clamp(2.6rem, 1.57rem + 1.14vw, 3.4rem);
+    --text-5xl: clamp(3.4rem, 1.86rem + 1.71vw, 4.6rem);
+  }
+}
+
 body {
-  background: var(--color-paper);
+  background: var(--color-bg);
   color: var(--color-ink);
   font-family: var(--font-body), monospace;
 }
 
 *:focus-visible {
-  outline: 2px dotted var(--color-red);
+  outline: 2px dotted var(--color-ink);
   outline-offset: 2px;
+}
+
+/* White text box — each text run gets its own white background hugging the
+   glyphs with no padding. box-decoration-break: clone gives every wrapped line
+   its own box so the white sits right on the edge of the text on each line. */
+.text-box {
+  background-color: var(--color-paper);
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+
+/* Marquee keyframes — consumed via animationName in Marquee.tsx */
+@keyframes marquee-left {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+@keyframes marquee-right {
+  from { transform: translateX(-50%); }
+  to   { transform: translateX(0); }
+}
+
+/* ==highlight== in case copy (lib/case-story.tsx). Tinted from the text's own
+   colour so it reads on the dark slides and the light intro panel alike. */
+.case-highlight {
+  color: inherit;
+  font-weight: 700;
+  background: color-mix(in srgb, currentColor 16%, transparent);
+  padding: 0.05em 0.25em;
+  border-radius: 2px;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
 }

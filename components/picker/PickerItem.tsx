@@ -1,23 +1,28 @@
+import Image from "next/image";
 import type { PickerItem as PickerItemType } from "@/types/case";
 
 type Props = {
   item: PickerItemType;
-  position: number; // distance from focused (−3 to +3)
-  onClick: () => void;
+  position: number;
+  blurAmount?: number;
+  cardHeight?: number;
+  rounded?: boolean;
 };
 
-export function PickerItem({ item, position, onClick }: Props) {
-  const absPos = Math.abs(position);
-  const label = absPos <= 1 ? `${item.title} · ${item.role}` : item.title;
+export function PickerItem({ item, blurAmount = 0, cardHeight = 560, rounded = false }: Props) {
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="text-left w-full truncate font-body"
-      tabIndex={-1}
-      aria-label={item.title}
+    <div
+      className={`relative w-full overflow-hidden select-none transition-[border-radius] duration-700 ${rounded ? "rounded-[20px]" : "rounded-none"}`}
+      style={{
+        height: cardHeight,
+        filter: blurAmount > 0 ? `blur(${blurAmount}px)` : undefined,
+      }}
     >
-      {label}
-    </button>
+      {item.thumbnail ? (
+        <Image src={item.thumbnail} alt={item.title} fill sizes="100vw" className="object-cover" style={{ objectPosition: item.thumbnailPosition }} />
+      ) : (
+        <div className="w-full h-full bg-[var(--color-bg-dark)]" />
+      )}
+    </div>
   );
 }
