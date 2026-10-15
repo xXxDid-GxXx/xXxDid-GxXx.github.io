@@ -51,9 +51,16 @@ const TWEEN_A11Y   = { type: "tween",  duration: 0.12, ease: "easeOut"       } a
 const SETTLE_SCALE = { type: "tween",  duration: 0.75, ease: [0.22, 1, 0.36, 1] } as const;
 const INSTANT      = { duration: 0 } as const;
 
-const DELTA_THRESHOLD = 20;
-const WHEEL_COOLDOWN  = 320;
-const STAGGER_MS      = 100;
+// Wheel input → exactly one case per gesture.
+// Mouse wheels send discrete notches (big integer deltas, or line/page mode):
+// one notch = one case, with a short lock so a single click can't double-fire.
+// Trackpads and smooth-scrolling mice send a stream of small deltas plus an
+// inertia tail: accumulate to a threshold, step once, then stay locked until
+// the stream goes quiet so the momentum can't carry on to the next case.
+const MOUSE_NOTCH_MIN    = 50;   // |deltaY| at or above this (integer) reads as a mouse notch
+const MOUSE_LOCK_MS      = 280;  // min gap between mouse-notch steps
+const TRACKPAD_THRESHOLD = 30;   // accumulated |deltaY| that triggers one step
+const TRACKPAD_QUIET_MS  = 200;  // stream must pause this long before the next swipe counts
 
 export function Picker({ items, initialSlug = "healthcare-er", onFocusChange, intro = false, centered = false, gambleNonce = 0, onIntroEnd, onScrollingChange }: PickerProps) {
   const n = items.length;
@@ -101,7 +108,6 @@ export function Picker({ items, initialSlug = "healthcare-er", onFocusChange, in
   }, [containerH]);
 
   const containerY = useMotionValue(0);
-  const lastWheelTime = useRef(0);
 
   // Section 3.6: debounced live region
   const [liveText, setLiveText] = useState("");
@@ -142,7 +148,8 @@ export function Picker({ items, initialSlug = "healthcare-er", onFocusChange, in
   const handleDragEnd = useCallback((_: PointerEvent, info: PanInfo) => {
     const offset = containerY.get();
     const projected = offset + info.velocity.y * 0.3;
-    const slots = -Math.round(projected / slotHeight);
+    // At most one case per swipe — a fast flick used to skip several.
+    const slots = Math.max(-1, Math.min(1, -Math.round(projected / slotHeight)));
     if (slots !== 0) {
       const prev = focusedIndexRef.current;
       const next = (prev + slots + n) % n;
@@ -166,22 +173,38 @@ export function Picker({ items, initialSlug = "healthcare-er", onFocusChange, in
   advanceRef.current = advance;
 
   useEffect(() => {
+    let lockedUntil = 0; // no steps before this timestamp
+    let accumulated = 0; // trackpad delta gathered towards the next step
     const handleWheel = (e: WheelEvent) => {
       e.preventDefault();
       if (introActiveRef.current || gambleSpinningRef.current) return;
-      const magnitude = Math.abs(e.deltaY);
-      if (magnitude < DELTA_THRESHOLD) return;
+      const dy = e.deltaY;
+      if (dy === 0) return;
       const now = performance.now();
-      if (now - lastWheelTime.current < WHEEL_COOLDOWN) return;
-      lastWheelTime.current = now;
+      const isMouseNotch =
+        e.deltaMode !== 0 || (Math.abs(dy) >= MOUSE_NOTCH_MIN && Number.isInteger(dy));
 
-      const direction = Math.sign(e.deltaY);
-      const steps = magnitude > 100 ? 3 : magnitude > 50 ? 2 : 1;
-
-      advanceRef.current(direction);
-      for (let i = 1; i < steps; i++) {
-        setTimeout(() => advanceRef.current(direction), i * STAGGER_MS);
+      if (isMouseNotch) {
+        if (now < lockedUntil) return;
+        lockedUntil = now + MOUSE_LOCK_MS;
+        accumulated = 0;
+        advanceRef.current(Math.sign(dy));
+        return;
       }
+
+      // Trackpad / smooth stream: while locked, every event (incl. inertia)
+      // pushes the lock out, so one swipe = one step.
+      if (now < lockedUntil) {
+        lockedUntil = now + TRACKPAD_QUIET_MS;
+        return;
+      }
+      // A direction change starts a fresh accumulation.
+      if (Math.sign(dy) !== Math.sign(accumulated)) accumulated = 0;
+      accumulated += dy;
+      if (Math.abs(accumulated) < TRACKPAD_THRESHOLD) return;
+      advanceRef.current(Math.sign(accumulated));
+      accumulated = 0;
+      lockedUntil = now + TRACKPAD_QUIET_MS;
     };
     window.addEventListener("wheel", handleWheel, { passive: false });
     return () => window.removeEventListener("wheel", handleWheel);
