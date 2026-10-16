@@ -60,7 +60,9 @@ const INSTANT      = { duration: 0 } as const;
 const MOUSE_NOTCH_MIN    = 50;   // |deltaY| at or above this (integer) reads as a mouse notch
 const MOUSE_LOCK_MS      = 280;  // min gap between mouse-notch steps
 const TRACKPAD_THRESHOLD = 30;   // accumulated |deltaY| that triggers one step
-const TRACKPAD_QUIET_MS  = 200;  // stream must pause this long before the next swipe counts
+const TRACKPAD_QUIET_MS  = 180;  // stream must pause this long before the next swipe counts…
+const NEW_SWIPE_MS       = 260;  // …unless a fresh swipe starts at least this long after a step
+const NEW_SWIPE_RATIO    = 1.6;  // fresh swipe = |delta| jumps well above the decaying inertia
 
 export function Picker({ items, initialSlug = "healthcare-er", onFocusChange, intro = false, centered = false, gambleNonce = 0, onIntroEnd, onScrollingChange }: PickerProps) {
   const n = items.length;
@@ -175,6 +177,8 @@ export function Picker({ items, initialSlug = "healthcare-er", onFocusChange, in
   useEffect(() => {
     let lockedUntil = 0; // no steps before this timestamp
     let accumulated = 0; // trackpad delta gathered towards the next step
+    let lastAbs = 0;     // |delta| of the previous trackpad event (inertia only decays)
+    let lastStepAt = 0;
     const handleWheel = (e: WheelEvent) => {
       e.preventDefault();
       if (introActiveRef.current || gambleSpinningRef.current) return;
@@ -188,12 +192,23 @@ export function Picker({ items, initialSlug = "healthcare-er", onFocusChange, in
         if (now < lockedUntil) return;
         lockedUntil = now + MOUSE_LOCK_MS;
         accumulated = 0;
+        lastStepAt = now;
         advanceRef.current(Math.sign(dy));
         return;
       }
 
       // Trackpad / smooth stream: while locked, every event (incl. inertia)
-      // pushes the lock out, so one swipe = one step.
+      // pushes the lock out, so one swipe = one step. Inertia only ever slows
+      // down, so a sharp rise in |delta| means the user started a new swipe —
+      // let that one through instead of making them wait for the tail to end.
+      const abs = Math.abs(dy);
+      const freshSwipe =
+        abs > lastAbs * NEW_SWIPE_RATIO + 4 && now - lastStepAt > NEW_SWIPE_MS;
+      lastAbs = abs;
+      if (freshSwipe) {
+        lockedUntil = 0;
+        accumulated = 0;
+      }
       if (now < lockedUntil) {
         lockedUntil = now + TRACKPAD_QUIET_MS;
         return;
@@ -204,6 +219,7 @@ export function Picker({ items, initialSlug = "healthcare-er", onFocusChange, in
       if (Math.abs(accumulated) < TRACKPAD_THRESHOLD) return;
       advanceRef.current(Math.sign(accumulated));
       accumulated = 0;
+      lastStepAt = now;
       lockedUntil = now + TRACKPAD_QUIET_MS;
     };
     window.addEventListener("wheel", handleWheel, { passive: false });

@@ -8,6 +8,7 @@ import { CaseRevealPanels } from './CaseRevealPanels'
 import { CaseStorySlideshow } from './CaseStorySlideshow'
 import { CaseOutroVideo } from './CaseOutroVideo'
 import { ReloadOnBreakpoint } from './ReloadOnBreakpoint'
+import { SmoothScroll } from './SmoothScroll'
 
 interface Props {
   slug: string
@@ -30,6 +31,7 @@ export function CaseCinematic({ slug, accent, data, nextCase }: Props) {
       style={{ '--color-case-accent': accent } as React.CSSProperties}
     >
       <ReloadOnBreakpoint />
+      <SmoothScroll />
 
       {/* ── Floating back nav ──────────────────────────────────────────────
           mix-blend-difference lets a single white text work on both

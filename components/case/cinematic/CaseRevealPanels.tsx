@@ -74,10 +74,19 @@ export function CaseRevealPanels({ panels }: Props) {
             pin: true,
             pinSpacing: true,
             start: 'top top',
-            end: panel2 ? '+=300%' : '+=150%',
-            scrub: 1,
+            end: panel2 ? '+=200%' : '+=110%',
+            scrub: 0.6,
+            // One gesture per panel: glide to the dark panel fully written,
+            // then to the light panel fully written (labels below).
+            snap: {
+              snapTo: 'labelsDirectional',
+              delay: 0.05,
+              duration: { min: 0.3, max: 0.8 },
+              ease: 'power2.inOut',
+            },
           },
         })
+        tl.addLabel('start', 0)
 
         // [0 → ~0.27] Panel 1 text slides in right-to-left
         text1.forEach((el, i) => {
@@ -87,8 +96,11 @@ export function CaseRevealPanels({ panels }: Props) {
         if (!panel2) {
           // Single panel — hold the text a beat, then the pin releases.
           tl.to({}, { duration: 0.2 }, text1.length * 0.045 + 0.06)
+          tl.addLabel('end')
           return
         }
+
+        tl.addLabel('dark', 0.29) // panel 1 fully written
 
         // [0.3 → 0.45] Panel 1 slides right, revealing panel 2
         tl.to(panel1!, { x: '100vw', ease: 'none', duration: 0.15 }, 0.3)
@@ -97,6 +109,7 @@ export function CaseRevealPanels({ panels }: Props) {
         text2.forEach((el, i) => {
           tl!.to(el, { y: 0, opacity: 1, ease: 'none', duration: 0.06 }, 0.5 + i * 0.045)
         })
+        tl.addLabel('end') // panel 2 fully written — next gesture leaves the pin
       }
 
       build()
