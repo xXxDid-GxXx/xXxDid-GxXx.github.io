@@ -324,11 +324,14 @@ export function Picker({ items, initialSlug = "healthcare-er", onFocusChange, in
     setGambleScaled(true);
     let holdTimer: ReturnType<typeof setTimeout> | undefined;
     const startTimer = setTimeout(() => {
+      // Mark the post-landing hold up front: the last focus change happens just
+      // before the tween resolves, and the "scrolling" idle check needs to know
+      // the hold is coming so the chrome stays faded until the wheel grows back.
+      gambleHoldUntilRef.current = performance.now() + GAMBLE_SPIN_MS + GAMBLE_HOLD_MS;
       goToRef.current(to, { type: "tween", duration: GAMBLE_SPIN_MS / 1000, ease: SPIN_EASE_GAMBLE })
         .then(() => {
           // Landed — hold a beat so the selected case reads (still small, chrome
           // still faded), then grow back to full screen.
-          gambleHoldUntilRef.current = performance.now() + GAMBLE_HOLD_MS;
           holdTimer = setTimeout(() => {
             gambleSpinningRef.current = false;
             setGambleScaled(false);

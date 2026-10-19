@@ -62,6 +62,10 @@ export function HomeStage({ items, header, contactStrip }: Props) {
   // The left column (header / preview / footer) is hidden only while the wheel
   // is centred (spin + hold); it stays visible while the user scrolls the wheel.
   const chromeHidden = centered;
+  // The name/role header and the contact strip also step aside for the whole
+  // gamble spin (press → land → grow back), so only the wheel and the rolling
+  // case text are on screen while it spins.
+  const edgeChromeHidden = chromeHidden || gambling;
 
   // After the spin scales up on centre, wait, then transfer to the right.
   useEffect(() => {
@@ -143,8 +147,8 @@ export function HomeStage({ items, header, contactStrip }: Props) {
           wheel spins, settling on the landed case in place. */}
       <div className="pointer-events-none absolute inset-y-0 left-0 z-20 flex w-full flex-col justify-between px-[var(--space-gutter)] py-[var(--space-loose)] md:w-auto md:max-w-[min(40vw,440px)]">
         <div
-          className={`pointer-events-auto self-start transition-opacity duration-300 ease-out ${
-            chromeHidden ? "opacity-0" : "opacity-100"
+          className={`self-start transition-opacity duration-300 ease-out ${
+            edgeChromeHidden ? "pointer-events-none opacity-0" : "pointer-events-auto opacity-100"
           }`}
         >
           {header}
@@ -186,8 +190,8 @@ export function HomeStage({ items, header, contactStrip }: Props) {
         )}
 
         <footer
-          className={`pointer-events-auto self-start transition-opacity duration-300 ease-out ${
-            chromeHidden ? "opacity-0" : "opacity-100"
+          className={`self-start transition-opacity duration-300 ease-out ${
+            edgeChromeHidden ? "pointer-events-none opacity-0" : "pointer-events-auto opacity-100"
           }`}
         >
           {contactStrip}
