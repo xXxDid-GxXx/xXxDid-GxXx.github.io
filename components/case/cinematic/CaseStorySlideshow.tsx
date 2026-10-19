@@ -42,7 +42,7 @@ interface Props {
 
 /**
  * Act 3 — pinned story slideshow. Slides are stacked and cycle one at a time
- * across 160% of scroll per slide: the image fades in, the title and paragraphs
+ * across 75% of scroll per slide: the image fades in, the title and paragraphs
  * appear one by one, and the slide fades out before the next appears. Images open in a lightbox on click. The slide count is free
  * to vary (the timeline is built from whatever [data-slide] elements exist).
  */
@@ -109,7 +109,7 @@ export function CaseStorySlideshow({ slides }: Props) {
 
         const n = slideEls.length
 
-        // Pin the section and cycle slides across n × 160% of scroll. Each
+        // Pin the section and cycle slides across n × 75% of scroll. Each
         // slide owns a 1.0 slot: the image fades in, then the title and each
         // paragraph appear one after another, everything holds, and the whole
         // slide fades out before the next one starts. No zooming or flying.
@@ -120,7 +120,7 @@ export function CaseStorySlideshow({ slides }: Props) {
             pin: true,
             pinSpacing: true,
             start: 'top top',
-            end: `+=${n * 110}%`,
+            end: `+=${n * 75}%`,
             // Lenis already smooths the scroll, so the timeline tracks it
             // directly (no extra scrub lag, no snapping — free scrolling).
             scrub: true,

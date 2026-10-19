@@ -17,7 +17,7 @@ interface Props {
 
 /**
  * Act 1 — cinematic hero. Dark 55/45 grid: a single image on the left scales up
- * and slides down off-screen across ~80% of pinned scroll while the right column
+ * and slides down off-screen across ~50% of pinned scroll while the right column
  * (eyebrow / title / description) fades out. Text staggers in on
  * load. Generalized from the tax-ocr hero — behavior is unchanged.
  */
@@ -85,7 +85,7 @@ export function CaseHeroCinematic({ image, alt, eyebrow, titleLines, description
             pin: true,
             pinSpacing: true,
             start: 'top top',
-            end: '+=80%',
+            end: '+=50%',
             scrub: true, // Lenis smooths the scroll; track it directly
           },
         })

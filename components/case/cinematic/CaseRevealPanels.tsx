@@ -10,7 +10,7 @@ interface Props {
 }
 
 /**
- * Act 2 — reveal panels. Pinned for 300% of scroll. Panel 1 (dark, front) has
+ * Act 2 — reveal panels. Pinned for 140% of scroll. Panel 1 (dark, front) has
  * its title + paragraphs slide in right-to-left, then the whole panel slides
  * right off-screen to uncover Panel 2 (light "paper", behind) whose title +
  * paragraphs drop in top-to-bottom. Generalized from the tax-ocr "before"
@@ -74,7 +74,7 @@ export function CaseRevealPanels({ panels }: Props) {
             pin: true,
             pinSpacing: true,
             start: 'top top',
-            end: panel2 ? '+=200%' : '+=110%',
+            end: panel2 ? '+=140%' : '+=80%',
             scrub: true, // Lenis smooths the scroll; track it directly
           },
         })
