@@ -45,16 +45,16 @@ const INTRO_FILL_SCALE = 0.4;
 // it fades up from black — nothing on screen, then a spinning wheel appears.
 const INTRO_ENTRANCE_MS = 50;
 
-// Smooth scrolling — modelled on Lenis as used by Codrops' "Atelier North"
-// (duration-based cubic ease-out). The drum position is continuous: wheel and
-// trackpad input move it proportionally and it eases towards the target; once
-// input stops it settles onto a case, rounding in the direction of travel so a
-// single mouse-wheel notch still lands on the next case.
+// Smooth, free scrolling — modelled on Lenis as used by Codrops' "Atelier
+// North" (duration-based cubic ease-out). The drum position is continuous:
+// wheel and trackpad input move it proportionally, it eases towards the target
+// and simply stops there — no snapping onto a case. The case nearest the
+// centre is the active one. Deliberate jumps (keys, taps, spins) still land
+// exactly on a case.
 const WHEEL_PX_PER_CASE = 240;  // wheel delta (px) that turns the drum by one case
 const WHEEL_EASE  = { type: "tween", duration: 0.9, ease: [0.33, 1, 0.68, 1] } as const; // cubic-out
 const SETTLE_EASE = { type: "tween", duration: 0.6, ease: [0.33, 1, 0.68, 1] } as const;
-const SETTLE_IDLE_MS   = 140;   // input quiet this long → settle onto a case
-const SETTLE_THRESHOLD = 0.15;  // a move smaller than this (in cases) settles back
+const FLING_SECONDS = 0.3;      // drag release: glide on by velocity × this
 const SPIN_EASE_INTRO  = [0.2, 0.7, 0.3, 1] as const;
 const SPIN_EASE_GAMBLE = [0.15, 0.75, 0.25, 1] as const;
 
@@ -74,10 +74,6 @@ const mod = (a: number, n: number) => ((a % n) + n) % n;
 // Signed offset of a card from the drum's (continuous) centre, wrapped into
 // [-n/2, n/2) so the drum is cyclic.
 const wrapPos = (p: number, n: number) => mod(p + n / 2, n) - n / 2;
-// Settle a continuous position onto a whole case, rounding in the direction of
-// travel once the move is past SETTLE_THRESHOLD.
-const settleTarget = (p: number, dir: number) =>
-  dir > 0 ? Math.ceil(p - SETTLE_THRESHOLD) : dir < 0 ? Math.floor(p + SETTLE_THRESHOLD) : Math.round(p);
 
 export function Picker({ items, initialSlug = "healthcare-er", onFocusChange, intro = false, centered = false, gambleNonce = 0, onIntroEnd, onScrollingChange }: PickerProps) {
   const n = items.length;
@@ -208,8 +204,8 @@ export function Picker({ items, initialSlug = "healthcare-er", onFocusChange, in
     else if (e.key === "Enter")   { e.preventDefault(); navigate(); }
   }, [advance, navigate]);
 
-  // Drag / touch swipe: the drum follows the finger 1:1, then settles — at most
-  // one case away from where the drag started, so a fast flick can't skip.
+  // Drag / touch swipe: the drum follows the finger 1:1; on release it keeps
+  // gliding with the release velocity and eases to a stop wherever that ends.
   const panStartRef = useRef(0);
   const handlePanStart = useCallback(() => {
     if (introActiveRef.current || gambleSpinningRef.current) return;
@@ -222,11 +218,7 @@ export function Picker({ items, initialSlug = "healthcare-er", onFocusChange, in
   }, [scroll, slotHeight]);
   const handlePanEnd = useCallback((_: PointerEvent, info: PanInfo) => {
     if (introActiveRef.current || gambleSpinningRef.current) return;
-    const base = Math.round(panStartRef.current);
-    const projected = scroll.get() - (info.velocity.y / slotHeight) * 0.15;
-    const dir = Math.sign(projected - panStartRef.current);
-    const to = Math.max(base - 1, Math.min(base + 1, settleTarget(projected, dir)));
-    goTo(to, SETTLE_EASE);
+    goTo(scroll.get() - (info.velocity.y / slotHeight) * FLING_SECONDS, WHEEL_EASE);
   }, [scroll, slotHeight, goTo]);
 
   // Tapping a neighbour brings it into focus. Tapping the focused card does
@@ -237,28 +229,18 @@ export function Picker({ items, initialSlug = "healthcare-er", onFocusChange, in
   }, [goTo]);
 
   // Wheel / trackpad: move the drum proportionally to the delta with a smooth
-  // ease-out, then settle onto a case once the input goes quiet.
+  // ease-out, and leave it wherever the input stops.
   useEffect(() => {
-    let idleTimer: ReturnType<typeof setTimeout> | null = null;
-    let lastDir = 0;
     const handleWheel = (e: WheelEvent) => {
       e.preventDefault();
       if (introActiveRef.current || gambleSpinningRef.current) return;
       // Normalise line/page wheel modes to pixels.
       const dy = e.deltaY * (e.deltaMode === 1 ? 33 : e.deltaMode === 2 ? window.innerHeight : 1);
       if (dy === 0) return;
-      lastDir = Math.sign(dy);
       goTo(targetRef.current + dy / WHEEL_PX_PER_CASE, WHEEL_EASE);
-      if (idleTimer) clearTimeout(idleTimer);
-      idleTimer = setTimeout(() => {
-        goTo(settleTarget(targetRef.current, lastDir), SETTLE_EASE);
-      }, SETTLE_IDLE_MS);
     };
     window.addEventListener("wheel", handleWheel, { passive: false });
-    return () => {
-      window.removeEventListener("wheel", handleWheel);
-      if (idleTimer) clearTimeout(idleTimer);
-    };
+    return () => window.removeEventListener("wheel", handleWheel);
   }, [goTo]);
 
   // Slot-machine intro: when `intro` turns on, spin the drum through a few
