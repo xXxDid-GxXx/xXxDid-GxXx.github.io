@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useCallback, useEffect, useRef, useMemo } from "react";
+import { useState, useCallback, useEffect, useRef, useMemo, useId } from "react";
 import { useRouter } from "next/navigation";
-import { motion, useMotionValue, useTransform, animate, useReducedMotion } from "framer-motion";
+import { motion, useMotionValue, useTransform, useVelocity, animate, useReducedMotion } from "framer-motion";
 import type { MotionValue, PanInfo } from "framer-motion";
 import type { PickerProps, PickerItem as PickerItemType } from "@/types/case";
 import { PickerItem } from "./PickerItem";
@@ -57,6 +57,13 @@ const SETTLE_IDLE_MS   = 140;   // input quiet this long → settle onto a case
 const SETTLE_THRESHOLD = 0.15;  // a move smaller than this (in cases) settles back
 const SPIN_EASE_INTRO  = [0.2, 0.7, 0.3, 1] as const;
 const SPIN_EASE_GAMBLE = [0.15, 0.75, 0.25, 1] as const;
+
+// Vertical motion blur while the drum moves: blur (px, along the direction of
+// travel only) grows with the drum's speed (cases/second) up to a cap, and is
+// switched off entirely below a small threshold so the wheel is sharp at rest.
+const MOTION_BLUR_PER_SPEED = 2.2;  // px of blur per case/second
+const MOTION_BLUR_MAX       = 18;   // px — reached during the fast part of a spin
+const MOTION_BLUR_MIN       = 0.4;  // px — below this the filter is removed
 
 const TWEEN_A11Y   = { type: "tween",  duration: 0.12, ease: "easeOut" } as const;
 // Shrink from full-screen back to the contained wheel — smooth ease-out, no bounce.
@@ -129,6 +136,27 @@ export function Picker({ items, initialSlug = "healthcare-er", onFocusChange, in
     animRef.current = animate(scroll, to, prefersReducedMotion ? TWEEN_A11Y : transition);
     return animRef.current;
   }, [scroll, prefersReducedMotion]);
+
+  // Motion blur — driven by the drum's velocity, written straight to the SVG
+  // filter and the drum's style (no React re-renders per frame).
+  const velocity = useVelocity(scroll);
+  const motionBlurId = `drum-motion-blur-${useId().replace(/[^a-zA-Z0-9_-]/g, "")}`;
+  const blurNodeRef = useRef<SVGFEGaussianBlurElement>(null);
+  const drumRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (prefersReducedMotion) return;
+    return velocity.on("change", (v) => {
+      const blur = Math.min(MOTION_BLUR_MAX, Math.abs(v) * MOTION_BLUR_PER_SPEED);
+      const drum = drumRef.current;
+      if (!drum) return;
+      if (blur < MOTION_BLUR_MIN) {
+        drum.style.filter = "";
+        return;
+      }
+      blurNodeRef.current?.setAttribute("stdDeviation", `0 ${blur.toFixed(2)}`);
+      drum.style.filter = `url(#${motionBlurId})`;
+    });
+  }, [velocity, motionBlurId, prefersReducedMotion]);
 
   const introActiveRef = useRef(intro);
   introActiveRef.current = intro;
@@ -346,7 +374,14 @@ export function Picker({ items, initialSlug = "healthcare-er", onFocusChange, in
           : { opacity: { duration: 0.9, ease: "easeInOut" }, scale: SETTLE_SCALE }
       }
     >
+    {/* Vertical-only Gaussian blur used as the drum's motion blur. */}
+    <svg aria-hidden width="0" height="0" className="absolute">
+      <filter id={motionBlurId} x="0" y="-20%" width="100%" height="140%">
+        <feGaussianBlur ref={blurNodeRef} stdDeviation="0 0" />
+      </filter>
+    </svg>
     <motion.div
+      ref={drumRef}
       tabIndex={0}
       role="listbox"
       aria-label="Case studies"
