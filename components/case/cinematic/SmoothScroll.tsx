@@ -31,7 +31,13 @@ export function SmoothScroll() {
       if (destroyed) return
       gsap.registerPlugin(ScrollTrigger)
 
-      const lenis = new LenisCtor({ lerp: 0.1, wheelMultiplier: 1, autoRaf: false })
+      // Tuned to match atelier-north's feel: each wheel/trackpad movement eases
+      // out over 1.2s on a cubic curve (time-based, not lerp), free scrolling.
+      const lenis = new LenisCtor({
+        duration: 1.2,
+        easing: (t: number) => 1 - (1 - t) ** 3,
+        autoRaf: false,
+      })
       active = lenis
       lenis.on('scroll', ScrollTrigger.update)
       const tick = (time: number) => lenis.raf(time * 1000)

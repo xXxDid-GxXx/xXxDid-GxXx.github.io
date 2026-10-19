@@ -86,7 +86,7 @@ export function CaseHeroCinematic({ image, alt, eyebrow, titleLines, description
             pinSpacing: true,
             start: 'top top',
             end: '+=80%',
-            scrub: 1.4,
+            scrub: true, // Lenis smooths the scroll; track it directly
           },
         })
 

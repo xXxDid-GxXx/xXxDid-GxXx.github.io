@@ -40,10 +40,6 @@ interface Props {
   slides: CinematicStorySlide[]
 }
 
-// Where in each slide's scroll slot it is fully revealed (text in, before the
-// fade-out at 0.85) — the snap target for that slide.
-const SNAP_AT = 0.78
-
 /**
  * Act 3 — pinned story slideshow. Slides are stacked and cycle one at a time
  * across 160% of scroll per slide: the image fades in, the title and paragraphs
@@ -125,17 +121,9 @@ export function CaseStorySlideshow({ slides }: Props) {
             pinSpacing: true,
             start: 'top top',
             end: `+=${n * 110}%`,
-            scrub: 0.6,
-            // One gesture = one slide: after a scroll, glide to the next slide
-            // in the scroll direction, resting where it's fully revealed (or
-            // to either end so the pin can be left).
-            snap: {
-              snapTo: [0, ...slideEls.map((_, i) => (i + SNAP_AT) / n), 1],
-              directional: true,
-              delay: 0.05,
-              duration: { min: 0.3, max: 0.8 },
-              ease: 'power2.inOut',
-            },
+            // Lenis already smooths the scroll, so the timeline tracks it
+            // directly (no extra scrub lag, no snapping — free scrolling).
+            scrub: true,
           },
         })
 
