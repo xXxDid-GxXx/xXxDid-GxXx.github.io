@@ -19,7 +19,7 @@ export function PickerItem({ item, blurAmount = 0, cardHeight = 560, rounded = f
       }}
     >
       {item.thumbnail ? (
-        <Image src={item.thumbnail} alt={item.title} fill sizes="100vw" className="object-cover" style={{ objectPosition: item.thumbnailPosition }} />
+        <Image src={item.thumbnail} alt={item.title} fill sizes="100vw" draggable={false} className="object-cover" style={{ objectPosition: item.thumbnailPosition }} />
       ) : (
         <div className="w-full h-full bg-[var(--color-bg-dark)]" />
       )}

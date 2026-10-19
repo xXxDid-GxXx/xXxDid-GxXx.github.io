@@ -152,10 +152,12 @@ export function HomeStage({ items, header, contactStrip }: Props) {
 
         {/* Focused case — text/link lives here. The slot fades only during the
             intro (centred); after that it stays and the inner block rolls on
-            every focus change, so it "spins" with the wheel and lands in place. */}
+            every focus change, so it "spins" with the wheel and lands in place.
+            Pointer-transparent (it has no links), so drags and swipes that start
+            on the text still turn the wheel underneath. */}
         {focusedItem && (
           <div
-            className={`pointer-events-auto mt-auto mb-6 self-start overflow-hidden transition-opacity duration-300 ease-out md:my-0 ${
+            className={`pointer-events-none mt-auto mb-6 self-start overflow-hidden transition-opacity duration-300 ease-out md:my-0 ${
               centered ? "opacity-0" : "opacity-100"
             }`}
           >

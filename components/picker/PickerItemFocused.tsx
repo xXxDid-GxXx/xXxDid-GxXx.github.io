@@ -13,7 +13,7 @@ export function PickerItemFocused({ item, cardHeight = 560 }: Props) {
       style={{ backgroundColor: "var(--color-bg-dark)", height: cardHeight }}
     >
       {item.thumbnail ? (
-        <Image src={item.thumbnail} alt={item.title} fill sizes="100vw" className="object-cover object-center" style={{ objectPosition: item.thumbnailPosition }} priority />
+        <Image src={item.thumbnail} alt={item.title} fill sizes="100vw" draggable={false} className="object-cover object-center select-none" style={{ objectPosition: item.thumbnailPosition }} priority />
       ) : null}
     </div>
   );
