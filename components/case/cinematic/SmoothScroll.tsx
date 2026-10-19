@@ -31,7 +31,8 @@ export function SmoothScroll() {
       if (destroyed) return
       gsap.registerPlugin(ScrollTrigger)
 
-      // Tuned to match atelier-north's feel: each wheel/trackpad movement eases
+      // Same settings as Codrops' "Atelier North" demo (MIT,
+      // github.com/codrops/atelier-north): each wheel/trackpad movement eases
       // out over 1.2s on a cubic curve (time-based, not lerp), free scrolling.
       const lenis = new LenisCtor({
         duration: 1.2,
