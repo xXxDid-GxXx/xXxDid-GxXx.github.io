@@ -17,7 +17,7 @@ const nextConfig: NextConfig = {
   // Dev only: let phones on the local Wi-Fi load the dev server's scripts via
   // this Mac's LAN address (Next blocks non-localhost dev origins by default).
   // Update if the Mac's IP changes (System Settings → Wi-Fi → Details).
-  allowedDevOrigins: ["192.168.1.30"],
+  allowedDevOrigins: ["192.168.1.58"],
 };
 
 export default withMDX(nextConfig);

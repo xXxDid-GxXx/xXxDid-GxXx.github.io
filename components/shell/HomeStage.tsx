@@ -103,6 +103,14 @@ export function HomeStage({ items, header, contactStrip }: Props) {
             />
           </Suspense>
 
+          {/* Fluted-glass edges — a strip of ribbed frosted glass down each side
+              of the wheel, fading out towards the centre (see .glass-edge in
+              globals.css). Purely decorative; never catches pointer input. */}
+          <div aria-hidden className="pointer-events-none absolute inset-0 z-10">
+            <div className="glass-edge glass-edge--left" />
+            <div className="glass-edge glass-edge--right" />
+          </div>
+
           {/* "See full case" (round liquid button) with the gamble action as a
               small rectangle underneath — one stacked column centred on screen
               over the full-screen preview. Both hide while the wheel spins. */}
