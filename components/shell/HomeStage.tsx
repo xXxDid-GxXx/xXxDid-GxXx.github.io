@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useEffect, useRef, useState } from "react";
+import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import { motion } from "framer-motion";
 import type { PickerItem } from "@/types/case";
@@ -42,8 +42,22 @@ export function HomeStage({ items, header, contactStrip }: Props) {
   // chrome stays put).
   const [gambling, setGambling] = useState(false);
   // Tracks the wheel live; the preview text rolls through cases as it changes
-  // (slot-machine) and settles on the landed case in place.
-  const [focusedSlug, setFocusedSlug] = useState("healthcare-er");
+  // (slot-machine) and settles on the landed case in place. `dir` is the way the
+  // wheel moved to reach it (1 = to the next case, -1 = to the previous one), so
+  // the text rolls in the same direction as the wheel.
+  const [focus, setFocus] = useState({ slug: "healthcare-er", dir: 1 });
+  const focusedSlug = focus.slug;
+  const handleFocusedCaseChange = useCallback((slug: string) => {
+    setFocus((prev) => {
+      if (prev.slug === slug) return prev;
+      const n = items.length;
+      const from = items.findIndex((i) => i.slug === prev.slug);
+      const to = items.findIndex((i) => i.slug === slug);
+      // Shortest way round the cyclic wheel decides the direction.
+      const step = (((to - from) % n) + n) % n;
+      return { slug, dir: step === 0 ? prev.dir : step <= n / 2 ? 1 : -1 };
+    });
+  }, [items]);
   // Bumped on each gamble press to trigger a random slot-machine spin.
   const [gambleNonce, setGambleNonce] = useState(0);
 
@@ -99,7 +113,7 @@ export function HomeStage({ items, header, contactStrip }: Props) {
               gambleNonce={gambleNonce}
               onIntroEnd={() => setPhase("scaled")}
               onScrollingChange={setScrolling}
-              onFocusedCaseChange={setFocusedSlug}
+              onFocusedCaseChange={handleFocusedCaseChange}
             />
           </Suspense>
 
@@ -156,8 +170,9 @@ export function HomeStage({ items, header, contactStrip }: Props) {
 
         {/* Focused case — text/link lives here. The slot fades only during the
             intro (centred); after that it stays and the inner block rolls on
-            every focus change, so it "spins" with the wheel and lands in place.
-            Pointer-transparent (it has no links), so drags and swipes that start
+            every focus change, so it "spins" with the wheel and lands in place —
+            from below when the wheel moves on to the next case, from above when
+            it moves back. Pointer-transparent (it has no links), so drags and swipes that start
             on the text still turn the wheel underneath. */}
         {focusedItem && (
           <div
@@ -167,7 +182,7 @@ export function HomeStage({ items, header, contactStrip }: Props) {
           >
             <motion.div
               key={focusedSlug}
-              initial={{ y: 22 }}
+              initial={{ y: 22 * focus.dir }}
               animate={{ y: 0 }}
               transition={{ type: "tween", duration: 0.2, ease: "easeOut" }}
               className="flex max-w-[34ch] flex-col items-start gap-5"
