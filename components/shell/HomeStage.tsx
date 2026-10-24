@@ -103,15 +103,6 @@ export function HomeStage({ items, header, contactStrip }: Props) {
             />
           </Suspense>
 
-          {/* Glass frame — one smooth frosted pane around the wheel: clear oval
-              in the middle, frosting up towards the edges and corners, with a
-              soft rounded rim (see .glass-frame in globals.css). Purely
-              decorative; never catches pointer input. */}
-          <div aria-hidden className="pointer-events-none absolute inset-0 z-10">
-            <div className="glass-frame" />
-            <div className="glass-frame-rim" />
-          </div>
-
           {/* "See full case" (round liquid button) with the gamble action as a
               small rectangle underneath — one stacked column centred on screen
               over the full-screen preview. Both hide while the wheel spins. */}
