@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import type { PickerItem } from "@/types/case";
 import { PickerSection } from "@/components/picker/PickerSection";
 import { LiquidButton } from "@/components/shell/LiquidButton";
+import { WaterRipple } from "@/components/shell/WaterRipple";
 
 type Props = {
   items: PickerItem[];
@@ -116,6 +117,9 @@ export function HomeStage({ items, header, contactStrip }: Props) {
               onFocusedCaseChange={handleFocusedCaseChange}
             />
           </Suspense>
+
+          {/* Water ripples that follow the cursor / finger over the wheel. */}
+          <WaterRipple />
 
           {/* "See full case" (round liquid button) with the gamble action as a
               small rectangle underneath — one stacked column centred on screen
