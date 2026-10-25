@@ -27,7 +27,7 @@ const PUSH_SPEED_GAIN = 0.01;  // extra depth per px moved since the last event
 const PUSH_MAX  = 1.2;
 const PUSH_RADIUS = 2;    // cells around the pointer that get pushed
 const CALM      = 0.004;  // below this peak height the loop goes to sleep
-const SHADE     = 5.0;    // slope → light/shade strength
+const SHADE     = 3.0;    // slope → light/shade strength
 const MAX_DPR   = 1.5;
 
 const VERT = `#version 300 es
@@ -55,8 +55,11 @@ void main() {
   // Light from the upper left: slopes facing it brighten, the rest darken.
   float light = dot(slope, normalize(vec2(-0.6, -0.8))) * uShade;
   // A tight sparkle on the steepest crest faces.
-  float sparkle = pow(clamp(light, 0.0, 1.0), 6.0) * 0.35;
-  float a = clamp(abs(light) * 0.4 + sparkle, 0.0, 0.35);
+  float sparkle = pow(clamp(light, 0.0, 1.0), 6.0) * 0.25;
+  // Mostly light: crests brighten, troughs only darken faintly.
+  float a = light > 0.0
+    ? clamp(light * 0.35 + sparkle, 0.0, 0.22)
+    : clamp(-light * 0.12, 0.0, 0.06);
   vec3 c = light > 0.0 ? vec3(1.0) : vec3(0.0);
   outColor = vec4(c * a, a); // premultiplied alpha
 }`;
