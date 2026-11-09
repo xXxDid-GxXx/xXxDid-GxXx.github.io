@@ -11,6 +11,9 @@ type Props = {
    *  scatter, or already in place (after the wheel spun with the dotted card
    *  showing, so the artwork simply takes over). */
   entry?: "scatter" | "home";
+  /** Fires when a revealed shape has formed (fly-in settled), and when the
+   *  artwork is told to hide — so the page can show text in step with the art. */
+  onFormed?: () => void;
   className?: string;
 };
 
@@ -29,7 +32,9 @@ const HINT_REST_PX = 14;  // cursor movement per frame above this counts as "mov
  * and listens to the window for the cursor, taps and touch. One WebGL context
  * lives for the page; the shape swaps (morphs) with the focused case.
  */
-export function ParticleArtwork({ slug, entry = "scatter", className = "" }: Props) {
+export function ParticleArtwork({ slug, entry = "scatter", onFormed, className = "" }: Props) {
+  const onFormedRef = useRef(onFormed);
+  onFormedRef.current = onFormed;
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const engineRef = useRef<ParticleEngine | null>(null);
   const slugRef = useRef(slug);
@@ -51,7 +56,9 @@ export function ParticleArtwork({ slug, entry = "scatter", className = "" }: Pro
     if (!canvas) return;
     const engine = new ParticleEngine(canvas);
     engineRef.current = engine;
-    if (!engine.supported) return;
+    // No WebGL: nothing will ever form, so let the text show at once.
+    if (!engine.supported) { onFormedRef.current?.(); return; }
+    engine.onFormed = () => onFormedRef.current?.();
 
     const rm = window.matchMedia("(prefers-reduced-motion: reduce)");
     engine.reducedMotion = rm.matches;
@@ -146,12 +153,12 @@ export function ParticleArtwork({ slug, entry = "scatter", className = "" }: Pro
   useEffect(() => {
     const engine = engineRef.current;
     if (!engine?.supported) return;
-    if (!slug) { engine.hide(); return; }
+    if (!slug) { engine.hide(); onFormedRef.current?.(); return; }
     let cancelled = false;
     getCaseShape(slug).then((shape) => {
       // Only reveal if this is still the wanted case by the time it decoded.
       if (!cancelled && slugRef.current === slug) engine.show(shape, entryRef.current);
-    }).catch(() => { /* image missing: the card stays dark */ });
+    }).catch(() => { onFormedRef.current?.(); /* image missing: the card stays dark */ });
     return () => { cancelled = true; };
   }, [slug]);
 

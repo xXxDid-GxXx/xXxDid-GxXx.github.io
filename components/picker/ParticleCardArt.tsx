@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import type { MotionValue } from "framer-motion";
-import { TUNING, getCaseShape, sampleShapePoints, subjectLayout, type ShapePoint } from "@/lib/particle-engine";
+import { TUNING, getCaseShape, sampleShapePoints, subjectLayout, shapeCount, sizeFactor, type ShapePoint } from "@/lib/particle-engine";
 
 type Props = {
   slug: string;
@@ -75,7 +75,7 @@ export function ParticleCardArt({ slug, velocity, active = true }: Props) {
         const twinkle = reduce ? 1 : 0.8 + 0.2 * Math.sin(t * 1.7 + phase * 40);
         const x = cx + p.u * scale + (jitter ? Math.sin(t * 9 + phase * 50) * jitter : 0);
         const y = cy + p.v * scale + (jitter ? Math.cos(t * 7 + phase * 30) * jitter * 0.6 : 0);
-        const size = TUNING.SIZE * (1 - TUNING.SIZE_BY_BRIGHTNESS * 0.5 + TUNING.SIZE_BY_BRIGHTNESS * p.lum) * 0.8;
+        const size = TUNING.SIZE * sizeFactor(scale) * (1 - TUNING.SIZE_BY_BRIGHTNESS * 0.5 + TUNING.SIZE_BY_BRIGHTNESS * p.lum) * 0.8;
         ctx.globalAlpha = (0.35 + 0.65 * Math.sqrt(p.lum)) * twinkle * streakFade;
         ctx.fillStyle = colors[i];
         if (streak > 1) ctx.fillRect(x - size / 2, y - streak / 2, size, streak + size);
@@ -92,7 +92,8 @@ export function ParticleCardArt({ slug, velocity, active = true }: Props) {
 
     getCaseShape(slug).then((shape) => {
       if (disposed) return;
-      const count = window.innerWidth < 768 ? TUNING.CARD_DOTS_MOBILE : TUNING.CARD_DOTS_DESKTOP;
+      // Same density rule as the live artwork, scaled to the card's dot budget.
+      const count = Math.round(shapeCount(layout.scale) * (TUNING.CARD_DOTS_DENSITY / TUNING.DENSITY));
       points = sampleShapePoints(shape, count);
       colors = points.map((p) => `rgb(${Math.round(p.r * 255)},${Math.round(p.g * 255)},${Math.round(p.b * 255)})`);
       if (!raf) raf = requestAnimationFrame(draw);

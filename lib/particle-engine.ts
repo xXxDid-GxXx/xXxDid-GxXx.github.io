@@ -18,30 +18,39 @@ import { PARTICLE_CASES } from "@/lib/particle-cases";
 
 // ── Tuning ───────────────────────────────────────────────────────────────────
 export const TUNING = {
-  /** Ambient dots scattered over the whole page while an artwork is on screen
-   *  (desktop / mobile), their drift speed (px/s) and brightness (0..1). */
-  AMBIENT_DESKTOP: 900,
-  AMBIENT_MOBILE: 300,
+  // Counts are densities, so the look is the same on a phone, a 14" laptop
+  // and a 2K monitor: shape counts are per square px of the subject's
+  // half-size (the `scale` from subjectLayout, squared), stage counts per
+  // square px of the viewport. Calibrated on a 1512×982 laptop, where the
+  // subject's half-size is ~450px.
+  /** Shape particles per px² of half-size², with floor and ceiling. */
+  DENSITY: 0.0885,
+  COUNT_MIN: 4000,
+  COUNT_MAX: 42000,
+  /** Ambient dots over the whole page per px² of viewport, their drift speed
+   *  (px/s) and brightness (0..1). */
+  AMBIENT_DENSITY: 0.0006,
   AMBIENT_DRIFT: 6,
   AMBIENT_BRIGHTNESS: 0.8,
-  /** Dots drawn on a particle case's wheel card while the wheel spins
-   *  (desktop / mobile) — see components/picker/ParticleCardArt.tsx. */
-  CARD_DOTS_DESKTOP: 2400,
-  CARD_DOTS_MOBILE: 1000,
-  /** Particles on desktop / on screens narrower than 768px. */
-  COUNT_DESKTOP: 18000,
-  COUNT_MOBILE: 7500,
+  /** Dots on a particle case's wheel card while the wheel spins, per px² of
+   *  half-size² — see components/picker/ParticleCardArt.tsx. */
+  CARD_DOTS_DENSITY: 0.0118,
   /** Extra "halo" particles scattered just outside the silhouette, as a
    *  fraction of the count, and how far they spread (fraction of the subject's
    *  half-size). They are dimmer and smaller and thin out with distance. */
   HALO_FRACTION: 1.3,
   HALO_SPREAD: 0.42,
-  /** Fine dust motes drifting off the shape (desktop / mobile). */
-  DUST_DESKTOP: 240,
-  DUST_MOBILE: 110,
+  /** Fine dust motes drifting off the shape, as a fraction of the shape count. */
+  DUST_FRACTION: 0.013,
 
-  /** Base particle diameter in CSS px (scaled by brightness and depth). */
+  /** Base particle diameter in CSS px at the calibration size (scaled by
+   *  brightness, depth and, mildly, by the subject's size — see sizeFactor). */
   SIZE: 3.0,
+  /** Subject half-size (px) at which SIZE applies; dots scale with the subject
+   *  between SIZE_FACTOR_MIN and SIZE_FACTOR_MAX of that. */
+  SIZE_REF: 450,
+  SIZE_FACTOR_MIN: 0.7,
+  SIZE_FACTOR_MAX: 1.25,
   /** How much a particle's size grows with brightness (0 = all the same). */
   SIZE_BY_BRIGHTNESS: 0.7,
   /** 0 → pure two-tone palette (shadow→highlight); 1 → the image's own colours. */
@@ -82,6 +91,9 @@ export const TUNING = {
 
   /** Fade in/out time of the whole artwork (s). */
   FADE: 0.4,
+  /** Time after a fly-in reveal before the shape counts as "formed" (s) —
+   *  the page text fades in at that moment. */
+  REVEAL_SETTLE: 0.9,
   /** Fraction of the free width/height the subject's longer side may take.
    *  >1 lets wide subjects bleed past the right edge. */
   FIT_W: 1.05,
@@ -113,6 +125,16 @@ type Layout = {
 };
 
 const STRIDE = 7; // x, y, size, r, g, b, a
+
+/** Dot-size multiplier for a subject of the given half-size (px). */
+export function sizeFactor(scale: number): number {
+  return Math.min(TUNING.SIZE_FACTOR_MAX, Math.max(TUNING.SIZE_FACTOR_MIN, scale / TUNING.SIZE_REF));
+}
+
+/** Shape particle count for a subject of the given half-size (px). */
+export function shapeCount(scale: number): number {
+  return Math.round(Math.min(TUNING.COUNT_MAX, Math.max(TUNING.COUNT_MIN, TUNING.DENSITY * scale * scale)));
+}
 
 /**
  * Where the subject sits on a stage of the given size: centred in the free
@@ -277,6 +299,11 @@ export class ParticleEngine {
   private freeUntil = 0;       // spring is weak until this time (burst)
   private opacity = 0; private opacityTarget = 0;
   private visible = false;
+  // Fly-in reveal bookkeeping: when it started and whether the shape has been
+  // reported as formed (see onFormed).
+  private revealAt = -1;
+  /** Called once per reveal when the flown-in particles have settled into the shape. */
+  onFormed: (() => void) | null = null;
   private time = 0; private last = 0;
   private raf = 0;
   reducedMotion = false;
@@ -335,14 +362,23 @@ export class ParticleEngine {
     this.canvas.height = Math.round(height * dpr);
     this.layout = { width, height, dpr, ...subjectLayout(width, height) };
     this.gl?.viewport(0, 0, this.canvas.width, this.canvas.height);
-    this.placeHomes();
+    // A big change in the subject's size wants a different particle count:
+    // resample the shape in place (particles start at home, no fly-in).
+    if (this.shape && this.count && Math.abs(shapeCount(this.layout.scale) - this.count) > this.count * 0.25) {
+      const shape = this.shape;
+      this.setShape(shape);
+      this.px.set(this.hx); this.py.set(this.hy); this.pz.set(this.hz);
+      this.vx.fill(0); this.vy.fill(0); this.vz.fill(0);
+    } else {
+      this.placeHomes();
+    }
     this.seedAmbient();
   }
 
   /** Scatter the ambient dots over the stage (re-seeded on resize). */
   private seedAmbient() {
     const { width, height } = this.layout;
-    this.ambientCount = width < 768 ? TUNING.AMBIENT_MOBILE : TUNING.AMBIENT_DESKTOP;
+    this.ambientCount = Math.round(width * height * TUNING.AMBIENT_DENSITY);
     this.ambient = new Float32Array(this.ambientCount * 7);
     for (let i = 0; i < this.ambientCount; i++) {
       const o = i * 7;
@@ -370,9 +406,8 @@ export class ParticleEngine {
   // ── Shape sampling ─────────────────────────────────────────────────────────
   setShape(shape: ParticleShape) {
     this.shape = shape;
-    const mobile = this.layout.width < 768;
-    const count = mobile ? TUNING.COUNT_MOBILE : TUNING.COUNT_DESKTOP;
-    this.dustCount = this.reducedMotion ? 0 : (mobile ? TUNING.DUST_MOBILE : TUNING.DUST_DESKTOP);
+    const count = shapeCount(this.layout.scale);
+    this.dustCount = this.reducedMotion ? 0 : Math.round(count * TUNING.DUST_FRACTION);
     const { width: w, height: h, data } = shape;
 
     // Weighted sampling: cumulative weights over opaque pixels.
@@ -511,6 +546,8 @@ export class ParticleEngine {
     }
     const { width, height, scale } = this.layout;
     const home = this.reducedMotion || entry === "home";
+    // Formed either right away (in place) or once the fly-in has settled.
+    this.revealAt = home ? this.time - TUNING.REVEAL_SETTLE : this.time;
     for (let i = 0; i < this.total; i++) {
       if (home) {
         this.px[i] = this.hx[i]; this.py[i] = this.hy[i]; this.pz[i] = this.hz[i];
@@ -603,6 +640,11 @@ export class ParticleEngine {
 
     this.simulate(dt);
     this.render();
+
+    if (this.revealAt >= 0 && this.visible && this.time - this.revealAt >= TUNING.REVEAL_SETTLE) {
+      this.revealAt = -1;
+      this.onFormed?.();
+    }
 
     if (!this.visible && this.opacity <= 0) {
       this.onDone?.(); this.onDone = null;
@@ -712,6 +754,7 @@ export class ParticleEngine {
     const cY = Math.cos(this.tiltY), sY = Math.sin(this.tiltY);
     const cX = Math.cos(this.tiltX), sX = Math.sin(this.tiltX);
     const v = this.vertices;
+    const sizeK = sizeFactor(scale);
     const twinkle = this.reducedMotion ? 0 : TUNING.TWINKLE;
     const t = this.time;
     let n = 0;
@@ -728,7 +771,7 @@ export class ParticleEngine {
       const tw = 1 - twinkle * 0.5 * (1 + Math.sin(t * (1.4 + this.phase[i] * 1.8) + this.phase[i] * 40));
       const o = n * STRIDE;
       v[o] = cx + x1 * persp; v[o + 1] = cy + y2 * persp;
-      v[o + 2] = TUNING.SIZE * (1 - TUNING.SIZE_BY_BRIGHTNESS * 0.5 + TUNING.SIZE_BY_BRIGHTNESS * l) * persp * (halo ? 0.7 : 1);
+      v[o + 2] = TUNING.SIZE * sizeK * (1 - TUNING.SIZE_BY_BRIGHTNESS * 0.5 + TUNING.SIZE_BY_BRIGHTNESS * l) * persp * (halo ? 0.7 : 1);
       v[o + 3] = this.col[i * 3]; v[o + 4] = this.col[i * 3 + 1]; v[o + 5] = this.col[i * 3 + 2];
       v[o + 6] = (halo ? 0.9 * l : 0.38 + 0.62 * Math.sqrt(l)) * depthLight * tw * this.opacity;
       n++;
@@ -743,7 +786,7 @@ export class ParticleEngine {
       const env = Math.sin(Math.PI * life);
       const o = n * STRIDE;
       v[o] = cx + x1 * persp; v[o + 1] = cy + y2 * persp;
-      v[o + 2] = this.dust[q + 7] * persp;
+      v[o + 2] = this.dust[q + 7] * sizeK * persp;
       const hl = this.shape?.highlight ?? [1, 1, 1];
       v[o + 3] = hl[0]; v[o + 4] = hl[1]; v[o + 5] = hl[2];
       v[o + 6] = 0.55 * env * this.opacity;

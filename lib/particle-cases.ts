@@ -20,12 +20,12 @@ export type ParticleCaseConfig = {
 
 export const PARTICLE_CASES: Record<string, ParticleCaseConfig> = {
   "healthcare-er": {
-    // Two surgeons over a patient, cut from a dim operating-room photo with
-    // scripts/subject-mask.swift; lifted so the scrubs read, lights stay brightest.
+    // A surgeon at work over the patient, under the operating lamp;
+    // Vision cut-out of the people, the lamp added by brightness.
     src: "/images/cases/healthcare-er/particle.png",
     shadow: "#2A5D7C",
     highlight: "#F3F1FF",
-    gamma: 0.7,
+    gamma: 0.45,
   },
   "ai-orchestration": {
     src: "/images/cases/ai-orchestration/particle.png",
