@@ -52,6 +52,7 @@ const INTRO_ENTRANCE_MS = 50;
 // centre is the active one. Deliberate jumps (keys, taps, spins) still land
 // exactly on a case.
 const WHEEL_PX_PER_CASE = 240;  // wheel delta (px) that turns the drum by one case
+const WHEEL_SNAP_MS = 160;      // quiet time after the last wheel event before snapping to a case
 const WHEEL_EASE  = { type: "tween", duration: 0.9, ease: [0.33, 1, 0.68, 1] } as const; // cubic-out
 const SETTLE_EASE = { type: "tween", duration: 0.6, ease: [0.33, 1, 0.68, 1] } as const;
 const FLING_SECONDS = 0.3;      // drag release: glide on by velocity × this
@@ -75,7 +76,7 @@ const mod = (a: number, n: number) => ((a % n) + n) % n;
 // [-n/2, n/2) so the drum is cyclic.
 const wrapPos = (p: number, n: number) => mod(p + n / 2, n) - n / 2;
 
-export function Picker({ items, initialSlug = "healthcare-er", onFocusChange, intro = false, centered = false, gambleNonce = 0, onIntroEnd, onScrollingChange }: PickerProps) {
+export function Picker({ items, initialSlug = "healthcare-er", onFocusChange, intro = false, centered = false, gambleNonce = 0, jumpTo = null, onIntroEnd, onScrollingChange }: PickerProps) {
   const n = items.length;
   const initial = Math.max(0, items.findIndex((i) => i.slug === initialSlug));
   const [focusedIndex, setFocusedIndex] = useState(initial);
@@ -218,8 +219,21 @@ export function Picker({ items, initialSlug = "healthcare-er", onFocusChange, in
   }, [scroll, slotHeight]);
   const handlePanEnd = useCallback((_: PointerEvent, info: PanInfo) => {
     if (introActiveRef.current || gambleSpinningRef.current) return;
-    goTo(scroll.get() - (info.velocity.y / slotHeight) * FLING_SECONDS, WHEEL_EASE);
+    // Glide on with the release velocity, then settle exactly on a case.
+    goTo(Math.round(scroll.get() - (info.velocity.y / slotHeight) * FLING_SECONDS), WHEEL_EASE);
   }, [scroll, slotHeight, goTo]);
+
+  // Case index (HomeStage): turn to the requested case the shortest way round.
+  const jumpNonceRef = useRef(0);
+  useEffect(() => {
+    if (!jumpTo || jumpTo.nonce === jumpNonceRef.current) return;
+    jumpNonceRef.current = jumpTo.nonce;
+    if (introActiveRef.current || gambleSpinningRef.current) return;
+    const to = itemsRef.current.findIndex((i) => i.slug === jumpTo.slug);
+    if (to < 0) return;
+    const from = Math.round(targetRef.current);
+    goTo(from + wrapPos(to - mod(from, n), n), SETTLE_EASE);
+  }, [jumpTo, n, goTo]);
 
   // Tapping a neighbour brings it into focus. Tapping the focused card does
   // nothing — the case only opens from the "See full case" button.
@@ -229,8 +243,10 @@ export function Picker({ items, initialSlug = "healthcare-er", onFocusChange, in
   }, [goTo]);
 
   // Wheel / trackpad: move the drum proportionally to the delta with a smooth
-  // ease-out, and leave it wherever the input stops.
+  // ease-out while input keeps coming, then snap to the nearest case once it
+  // stops, so the wheel never rests between two cards.
   useEffect(() => {
+    let snapTimer: ReturnType<typeof setTimeout> | undefined;
     const handleWheel = (e: WheelEvent) => {
       e.preventDefault();
       if (introActiveRef.current || gambleSpinningRef.current) return;
@@ -238,9 +254,11 @@ export function Picker({ items, initialSlug = "healthcare-er", onFocusChange, in
       const dy = e.deltaY * (e.deltaMode === 1 ? 33 : e.deltaMode === 2 ? window.innerHeight : 1);
       if (dy === 0) return;
       goTo(targetRef.current + dy / WHEEL_PX_PER_CASE, WHEEL_EASE);
+      if (snapTimer) clearTimeout(snapTimer);
+      snapTimer = setTimeout(() => goTo(Math.round(targetRef.current), SETTLE_EASE), WHEEL_SNAP_MS);
     };
     window.addEventListener("wheel", handleWheel, { passive: false });
-    return () => window.removeEventListener("wheel", handleWheel);
+    return () => { window.removeEventListener("wheel", handleWheel); if (snapTimer) clearTimeout(snapTimer); };
   }, [goTo]);
 
   // Slot-machine intro: when `intro` turns on, spin the drum through a few
@@ -333,15 +351,37 @@ export function Picker({ items, initialSlug = "healthcare-er", onFocusChange, in
   onScrollingRef.current = onScrollingChange;
   const scrollIdleTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const scrollFirstRef = useRef(true);
-  useEffect(() => {
-    if (scrollFirstRef.current) { scrollFirstRef.current = false; return; }
-    onScrollingRef.current?.(true);
+  // True while the drum is physically turning (velocity above a small
+  // threshold), so the chrome hides from the very first frame of motion.
+  const movingRef = useRef(false);
+  const scheduleIdle = useCallback((minMs: number) => {
     if (scrollIdleTimer.current) clearTimeout(scrollIdleTimer.current);
     // A gamble landing extends the idle flip through the post-spin hold, so
     // the chrome stays faded until the wheel starts growing back.
     const holdLeft = Math.max(0, gambleHoldUntilRef.current - performance.now());
-    scrollIdleTimer.current = setTimeout(() => onScrollingRef.current?.(false), Math.max(450, holdLeft));
-  }, [focusedIndex]);
+    scrollIdleTimer.current = setTimeout(() => {
+      if (movingRef.current) return; // still turning: the velocity watcher will flip it
+      onScrollingRef.current?.(false);
+    }, Math.max(minMs, holdLeft));
+  }, []);
+  useEffect(() => {
+    if (scrollFirstRef.current) { scrollFirstRef.current = false; return; }
+    onScrollingRef.current?.(true);
+    scheduleIdle(450);
+  }, [focusedIndex, scheduleIdle]);
+  useEffect(() => {
+    return velocity.on("change", (v) => {
+      const moving = Math.abs(v) > 0.04; // cases per second
+      if (moving && !movingRef.current) {
+        movingRef.current = true;
+        if (scrollIdleTimer.current) clearTimeout(scrollIdleTimer.current);
+        onScrollingRef.current?.(true);
+      } else if (!moving && movingRef.current) {
+        movingRef.current = false;
+        scheduleIdle(250);
+      }
+    });
+  }, [velocity, scheduleIdle]);
 
   return (
     <motion.div
@@ -401,6 +441,7 @@ export function Picker({ items, initialSlug = "healthcare-er", onFocusChange, in
             arrayIndex={arrayIndex}
             n={n}
             scroll={scroll}
+            velocity={velocity}
             position={position}
             radius={radius}
             slotHeight={slotHeight}
@@ -420,6 +461,7 @@ type DrumCardProps = {
   arrayIndex: number;
   n: number;
   scroll: MotionValue<number>;
+  velocity: MotionValue<number>;
   position: number;
   radius: number;
   slotHeight: number;
@@ -434,7 +476,7 @@ type DrumCardProps = {
 // rotation around the shared axis one radius behind the wheel (originZ), so
 // neighbours curve back over the top/bottom edge — perspective alone makes them
 // recede, exactly like a real spinning drum.
-function DrumCard({ item, arrayIndex, n, scroll, position, radius, slotHeight, cardHeight, centered, onTap }: DrumCardProps) {
+function DrumCard({ item, arrayIndex, n, scroll, velocity, position, radius, slotHeight, cardHeight, centered, onTap }: DrumCardProps) {
   const pos = useTransform(scroll, (s) => wrapPos(arrayIndex - s, n));
   const rotateX = useTransform(pos, (p) => -p * ANGLE_DEG);
   const opacity = useTransform(pos, (p) => Math.max(0, Math.min(1, 1 - (Math.abs(p) - DRUM_VISIBLE) / DRUM_FADE)));
@@ -471,8 +513,8 @@ function DrumCard({ item, arrayIndex, n, scroll, position, radius, slotHeight, c
       onTap={onTap}
     >
       {isFocused
-        ? <PickerItemFocused item={item} cardHeight={cardHeight} centered={centered} />
-        : <PickerItem item={item} position={position} cardHeight={cardHeight} />
+        ? <PickerItemFocused item={item} cardHeight={cardHeight} centered={centered} velocity={velocity} />
+        : <PickerItem item={item} position={position} cardHeight={cardHeight} velocity={velocity} visible={isVisible} />
       }
     </motion.div>
   );

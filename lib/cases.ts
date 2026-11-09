@@ -2,6 +2,7 @@ import fs from "fs";
 import path from "path";
 import matter from "gray-matter";
 import type { CaseFrontmatter, PickerItem } from "@/types/case";
+import { isParticleCase } from "@/lib/particle-cases";
 
 const CASES_DIR = path.join(process.cwd(), "content/cases");
 
@@ -34,6 +35,13 @@ export function getNextCase(slug: string): CaseFrontmatter {
   return cases[(idx + 1) % cases.length] ?? cases[0];
 }
 
+/** The first sentence of a paragraph (up to the first . ! or ? followed by a space or the end). */
+export function firstSentence(text: string): string {
+  const flat = text.replace(/\s+/g, " ").trim();
+  const m = flat.match(/^.*?[.!?](?=\s|$)/);
+  return m ? m[0] : flat;
+}
+
 export function casesToPickerItems(cases: CaseFrontmatter[]): PickerItem[] {
   return cases.map((c, i) => ({
     slug: c.slug,
@@ -44,8 +52,14 @@ export function casesToPickerItems(cases: CaseFrontmatter[]): PickerItem[] {
     role: c.role,
     year: String(c.year),
     preview: c.preview.description,
-    thumbnail: c.thumbnail,
+    summary: firstSentence(c.preview.description),
+    // Particle cases (lib/particle-cases.ts) have no card image: the wheel card
+    // stays dark and the live particle artwork (HomeStage) is all that shows.
+    thumbnail: isParticleCase(c.slug) ? "" : c.thumbnail,
     thumbnailPosition: c.thumbnailPosition,
     accentColor: c.accentColor,
+    tools: c.tools ?? [],
+    company: c.company,
+    status: c.status,
   }));
 }

@@ -40,9 +40,14 @@ export type PickerItem = {
   role: string;
   year: string;
   preview: string;
+  /** First sentence of `preview`, for the homepage column. */
+  summary: string;
   thumbnail: string;
   thumbnailPosition?: string;
   accentColor: string;
+  tools: string[];
+  company: string;
+  status: CaseStatus;
 };
 
 export type PickerProps = {
@@ -56,6 +61,8 @@ export type PickerProps = {
   centered?: boolean;
   /** Bumping this number triggers a "gamble" spin that lands on a random case. */
   gambleNonce?: number;
+  /** Set (with a fresh nonce) to turn the wheel to a given case, shortest way round. */
+  jumpTo?: { slug: string; nonce: number } | null;
   /** Fired once the intro spin settles on the initial case. */
   onIntroEnd?: () => void;
   /** Fired with true while the wheel is moving, false once it settles. */

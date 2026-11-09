@@ -10,12 +10,13 @@ type Props = {
   intro?: boolean;
   centered?: boolean;
   gambleNonce?: number;
+  jumpTo?: { slug: string; nonce: number } | null;
   onIntroEnd?: () => void;
   onScrollingChange?: (scrolling: boolean) => void;
   onFocusedCaseChange?: (slug: string) => void;
 };
 
-export function PickerSection({ items, intro, centered, gambleNonce, onIntroEnd, onScrollingChange, onFocusedCaseChange }: Props) {
+export function PickerSection({ items, intro, centered, gambleNonce, jumpTo, onIntroEnd, onScrollingChange, onFocusedCaseChange }: Props) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const hasMountedRef = useRef(false);
@@ -64,6 +65,7 @@ export function PickerSection({ items, intro, centered, gambleNonce, onIntroEnd,
         intro={intro}
         centered={centered}
         gambleNonce={gambleNonce}
+        jumpTo={jumpTo}
         onIntroEnd={onIntroEnd}
         onScrollingChange={onScrollingChange}
       />

@@ -69,6 +69,16 @@ body {
   -webkit-box-decoration-break: clone;
 }
 
+/* Like .text-box, but the per-line boxes meet vertically (the padding fills
+   the leading), so a paragraph reads as one shape whose right edge still
+   follows the words. Pair with a line-height of about 1.6. */
+.text-box-solid {
+  background-color: var(--color-paper);
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+  padding: 0.3em 0.45em;
+}
+
 /* Marquee keyframes — consumed via animationName in Marquee.tsx */
 @keyframes marquee-left {
   from { transform: translateX(0); }
