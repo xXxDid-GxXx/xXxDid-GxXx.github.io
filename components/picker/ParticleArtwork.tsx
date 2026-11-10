@@ -59,6 +59,17 @@ export function ParticleArtwork({ slug, entry = "scatter", onFormed, onReveal, c
   const entryRef = useRef(entry);
   entryRef.current = entry;
 
+  // Motion diagnostics, shown only with ?debug=motion in the address: lets a
+  // phone report why the tilt is or isn't running without a tethered console.
+  const [motionDebug, setMotionDebug] = useState<string[] | null>(null);
+  const motionLog = useRef<Record<string, string>>({});
+  const reportMotion = (key: string, value: string) => {
+    motionLog.current[key] = value;
+    if (typeof location !== "undefined" && location.search.includes("debug=motion")) {
+      setMotionDebug(Object.entries(motionLog.current).map(([k, v]) => `${k}: ${v}`));
+    }
+  };
+
   // Cursor hint state: where it sits and whether it is showing.
   const [hint, setHint] = useState<{ x: number; y: number; on: boolean }>({ x: 0, y: 0, on: false });
   const hintRef = useRef({ done: false, timer: 0 as ReturnType<typeof setTimeout> | 0, shownAt: 0, lastX: 0, lastY: 0 });
@@ -152,7 +163,13 @@ export function ParticleArtwork({ slug, entry = "scatter", onFormed, onReveal, c
     type OrientationCtor = typeof DeviceOrientationEvent & { requestPermission?: () => Promise<"granted" | "denied"> };
     const touchDevice = window.matchMedia("(hover: none)").matches;
     let orientationOn = false;
+    let lastReport = 0;
     const onOrientation = (e: DeviceOrientationEvent) => {
+      const now = performance.now();
+      if (now - lastReport > 150) {
+        lastReport = now;
+        reportMotion("event", `beta ${e.beta?.toFixed(0) ?? "null"} gamma ${e.gamma?.toFixed(0) ?? "null"}${rm.matches ? " (reduced motion: ignored)" : ""}`);
+      }
       if (e.beta == null || e.gamma == null || rm.matches) return;
       // Portrait: gamma leans left/right, beta tips toward/away. Landscape
       // swaps them (and flips with the side the phone is turned to).
@@ -165,6 +182,7 @@ export function ParticleArtwork({ slug, entry = "scatter", onFormed, onReveal, c
     const startOrientation = () => {
       if (orientationOn) return;
       orientationOn = true;
+      reportMotion("status", "listening");
       window.addEventListener("deviceorientation", onOrientation, { passive: true });
     };
     const Ctor = (typeof DeviceOrientationEvent !== "undefined" ? DeviceOrientationEvent : undefined) as OrientationCtor | undefined;
@@ -173,13 +191,25 @@ export function ParticleArtwork({ slug, entry = "scatter", onFormed, onReveal, c
     const askOrientation = () => {
       if (permissionAsked || !Ctor?.requestPermission) return;
       permissionAsked = true;
-      Ctor.requestPermission().then((state) => { if (state === "granted") startOrientation(); }).catch(() => {});
+      reportMotion("status", "asking (gesture)");
+      Ctor.requestPermission()
+        .then((state) => { reportMotion("permission", state); if (state === "granted") startOrientation(); })
+        .catch((err) => { permissionAsked = false; reportMotion("permission", `error: ${err?.message ?? err}`); });
     };
+    reportMotion("touch", String(touchDevice));
+    reportMotion("https", String(window.isSecureContext));
+    reportMotion("api", Ctor ? (needsPermission ? "needs permission" : "no permission needed") : "missing");
+    reportMotion("status", "idle");
     // Chrome also exposes requestPermission but grants it without a gesture;
     // iOS rejects until a tap, so a refusal here just defers to the first touch.
     if (touchDevice && Ctor && window.isSecureContext) {
       if (!needsPermission) startOrientation();
-      else Ctor.requestPermission!().then((state) => { if (state === "granted") startOrientation(); }).catch(() => {});
+      else {
+        reportMotion("status", "asking (load)");
+        Ctor.requestPermission!()
+          .then((state) => { reportMotion("permission", state); if (state === "granted") startOrientation(); })
+          .catch((err) => reportMotion("status", `waiting for a tap (${err?.message ?? err})`));
+      }
     }
     // iOS only grants the request inside a real gesture: touch release / click.
     const onGestureOrientation = () => { if (touchDevice && needsPermission && window.isSecureContext && !orientationOn) askOrientation(); };
@@ -233,6 +263,11 @@ export function ParticleArtwork({ slug, entry = "scatter", onFormed, onReveal, c
         className={`pointer-events-none absolute inset-0 h-full w-full ${className}`}
         style={{ opacity: 0 }}
       />
+      {motionDebug && (
+        <pre className="pointer-events-none fixed bottom-24 left-4 z-50 m-0 bg-black/80 p-2 font-mono text-[11px] leading-snug text-white">
+          {motionDebug.join("\n")}
+        </pre>
+      )}
       {/* Cursor hint — a faint label trailing the cursor, eased in and out. */}
       <span
         aria-hidden
