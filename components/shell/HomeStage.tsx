@@ -50,9 +50,9 @@ function MailIcon() {
   );
 }
 
-// The Contact toggle, top-right on phones: same family as the arrows and chips.
+// The Contact toggle, under the name on phones: same family as the arrows and chips.
 const CONTACT =
-  "inline-flex h-11 w-11 cursor-pointer items-center justify-center border border-white/35 bg-[#0E0E0E]/70 text-white transition-[background-color,color,border-color,transform] duration-200 ease-out hover:border-white hover:bg-white hover:text-[var(--color-ink)] active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white motion-reduce:transition-colors";
+  "inline-flex h-11 cursor-pointer items-center gap-2 border border-white/35 bg-[#0E0E0E]/70 px-4 font-body text-xs uppercase tracking-[0.15em] leading-none text-white transition-[background-color,color,border-color,transform] duration-200 ease-out hover:border-white hover:bg-white hover:text-[var(--color-ink)] active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white motion-reduce:transition-colors";
 
 // Small square arrow buttons beside the counter (same family as the chips).
 const ARROW =
@@ -148,7 +148,7 @@ export function HomeStage({ items, header, contactStrip, contactMenu }: Props) {
   }, [scrolling]);
   const nudgeArrow = hint.on && !hint.cursor;
 
-  // Contact menu (phones): one button top-right opens the three ways to
+  // Contact menu (phones): one button under the name opens the three ways to
   // reach me beneath it. Closes on Escape, on a tap outside, or on a second
   // press. Keeps the contacts off the artwork until they are wanted.
   const [contactOpen, setContactOpen] = useState(false);
@@ -195,13 +195,34 @@ export function HomeStage({ items, header, contactStrip, contactMenu }: Props) {
           text ROLLS through cases as the wheel spins, settling on the landed
           case in place. */}
       <div className="pointer-events-none absolute inset-y-0 left-0 z-20 flex w-full flex-col justify-between px-[var(--space-gutter)] py-[max(var(--space-loose),var(--space-gutter))] md:w-auto md:max-w-[min(40vw,440px)]">
-        {/* Name and roles; on larger screens the contact chips sit under
-            them. On phones the chips give way to the Contact button top-right,
-            and the block leaves room for it so a long roles line wraps
-            instead of running under it. */}
-        <div className={`pointer-events-auto flex flex-col items-start gap-5 self-start pr-14 md:pr-0 ${chrome}`}>
+        {/* Name and roles, with the contacts under them: the three chips on
+            larger screens; on phones a single Contact button in the same
+            place, which drops the three down beneath it (see the hook below),
+            so the artwork stays clear until they are wanted. */}
+        <div className={`pointer-events-auto flex flex-col items-start gap-5 self-start ${chrome}`}>
           {header}
           <div className="hidden md:block">{contactStrip}</div>
+          <div ref={contactRef} className="relative md:hidden">
+            <button
+              type="button"
+              onClick={() => setContactOpen((o) => !o)}
+              aria-expanded={contactOpen}
+              aria-controls="contact-menu"
+              className={CONTACT}
+            >
+              <MailIcon />
+              Contact
+              <span aria-hidden className="inline-block w-3 text-center">{contactOpen ? "×" : "+"}</span>
+            </button>
+            {contactOpen && (
+              <div
+                id="contact-menu"
+                className="absolute left-0 top-full z-30 mt-2 animate-[column-in_200ms_ease-out_both] border border-white/15 bg-[#0E0E0E]/95 p-2"
+              >
+                {contactMenu}
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Focused case — eyebrow, title, summary, role and the link to the
@@ -248,31 +269,6 @@ export function HomeStage({ items, header, contactStrip, contactMenu }: Props) {
         {/* Keeps the case column centred between the top block and the
             bottom edge (the column is justified "between" the three). */}
         <div aria-hidden />
-      </div>
-
-      {/* Top right, phones only — the Contact button and its menu. */}
-      <div
-        ref={contactRef}
-        className={`pointer-events-auto absolute right-[var(--space-gutter)] top-[max(var(--space-loose),var(--space-gutter))] z-30 flex flex-col items-end gap-2 md:hidden ${chrome}`}
-      >
-        <button
-          type="button"
-          onClick={() => setContactOpen((o) => !o)}
-          aria-expanded={contactOpen}
-          aria-controls="contact-menu"
-          aria-label={contactOpen ? "Close contact menu" : "Contact"}
-          className={CONTACT}
-        >
-          <span aria-hidden className="inline-block w-3 text-center">{contactOpen ? "×" : <MailIcon />}</span>
-        </button>
-        {contactOpen && (
-          <div
-            id="contact-menu"
-            className="animate-[column-in_200ms_ease-out_both] border border-white/15 bg-[#0E0E0E]/95 p-2"
-          >
-            {contactMenu}
-          </div>
-        )}
       </div>
 
       {/* Counter and previous / next arrows, as one block: the counter above,
