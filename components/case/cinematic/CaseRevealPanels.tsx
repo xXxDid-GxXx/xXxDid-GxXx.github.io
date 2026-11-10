@@ -10,10 +10,10 @@ interface Props {
 }
 
 /**
- * Act 2 — reveal panels. Pinned for 140% of scroll. Panel 1 (dark, front) has
- * its title + paragraphs slide in right-to-left, then the whole panel slides
- * right off-screen to uncover Panel 2 (light "paper", behind) whose title +
- * paragraphs drop in top-to-bottom. Generalized from the tax-ocr "before"
+ * Act 2 — reveal panels. Panel 1 (dark, front) has its title + paragraphs
+ * slide in right-to-left while it scrolls into view; then, pinned for 90% of
+ * scroll, the whole panel slides right off-screen to uncover Panel 2 (light
+ * "paper", behind) whose title + paragraphs drop in top-to-bottom. Generalized from the tax-ocr "before"
  * section — behavior is unchanged; paragraph counts are free to vary since the
  * timeline iterates over whatever animated elements each panel contains.
  *
@@ -21,7 +21,7 @@ interface Props {
  * the rest at --color-ink-muted. Dark-panel paragraphs are all white.
  *
  * With a single panel there is nothing to reveal: the dark panel's text slides
- * in and the pin releases after a shorter hold.
+ * in as it arrives and the section is not pinned.
  */
 export function CaseRevealPanels({ panels }: Props) {
   const [dark, light] = panels
@@ -59,43 +59,49 @@ export function CaseRevealPanels({ panels }: Props) {
         : []
 
       let tl: ReturnType<typeof gsap.timeline> | undefined
+      let entry: ReturnType<typeof gsap.timeline> | undefined
       let resizeTimer: ReturnType<typeof setTimeout>
 
       function build() {
         tl?.kill()
+        entry?.kill()
         ScrollTrigger.getAll().filter((t) => t.trigger === wrapper).forEach((t) => t.kill())
         gsap.set(panel1!, { clearProps: 'transform,x' })
         gsap.set(text1, { x: 64, opacity: 0 })       // panel 1 → slides in right-to-left
         gsap.set(text2, { y: -28, opacity: 0 })      // panel 2 → drops in top-to-bottom
 
+        // Panel 1's text slides in while the panel itself rises into view
+        // behind the leaving hero, so there is never a blank dark screen to
+        // scroll through: by the time the panel reaches the top it reads.
+        entry = gsap.timeline({
+          scrollTrigger: { trigger: wrapper, start: 'top 75%', end: 'top top', scrub: true },
+        })
+        text1.forEach((el, i) => {
+          entry!.to(el, { x: 0, opacity: 1, ease: 'none', duration: 0.3 }, i * 0.1)
+        })
+
+        // A single panel has nothing to reveal, so it isn't pinned at all.
+        if (!panel2) return
+
+        // Pinned: a short hold on panel 1, then it slides right to uncover
+        // panel 2, whose text drops in. Then the pin releases.
         tl = gsap.timeline({
           scrollTrigger: {
             trigger: wrapper,
             pin: true,
             pinSpacing: true,
             start: 'top top',
-            end: panel2 ? '+=140%' : '+=80%',
+            end: '+=90%',
             scrub: true, // Lenis smooths the scroll; track it directly
           },
         })
 
-        // [0 → ~0.27] Panel 1 text slides in right-to-left
-        text1.forEach((el, i) => {
-          tl!.to(el, { x: 0, opacity: 1, ease: 'none', duration: 0.06 }, i * 0.045)
-        })
+        // [0.12 → 0.27] Panel 1 slides right, revealing panel 2
+        tl.to(panel1!, { x: '100vw', ease: 'none', duration: 0.15 }, 0.12)
 
-        if (!panel2) {
-          // Single panel — hold the text a beat, then the pin releases.
-          tl.to({}, { duration: 0.2 }, text1.length * 0.045 + 0.06)
-          return
-        }
-
-        // [0.3 → 0.45] Panel 1 slides right, revealing panel 2
-        tl.to(panel1!, { x: '100vw', ease: 'none', duration: 0.15 }, 0.3)
-
-        // [0.5 → ~0.77] Panel 2 text drops in top-to-bottom, then pin releases
+        // [0.3 → ~0.5] Panel 2 text drops in top-to-bottom, then pin releases
         text2.forEach((el, i) => {
-          tl!.to(el, { y: 0, opacity: 1, ease: 'none', duration: 0.06 }, 0.5 + i * 0.045)
+          tl!.to(el, { y: 0, opacity: 1, ease: 'none', duration: 0.05 }, 0.3 + i * 0.02)
         })
       }
 
@@ -109,6 +115,7 @@ export function CaseRevealPanels({ panels }: Props) {
 
       cleanupFn = () => {
         tl?.kill()
+        entry?.kill()
         ScrollTrigger.getAll().filter((t) => t.trigger === wrapper).forEach((t) => t.kill())
         window.removeEventListener('resize', onResize)
         clearTimeout(resizeTimer)
@@ -122,7 +129,7 @@ export function CaseRevealPanels({ panels }: Props) {
   return (
     <section
       ref={wrapperRef}
-      className="relative flex flex-col bg-[#0E0E0E] md:block md:h-[100dvh] md:overflow-hidden"
+      className="relative z-10 flex flex-col bg-[#0E0E0E] md:block md:h-[100dvh] md:overflow-hidden"
       aria-label="Cinematic story panels"
     >
       {/* Panel 2 — light "paper", behind */}

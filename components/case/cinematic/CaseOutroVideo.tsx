@@ -125,7 +125,7 @@ export function CaseOutroVideo({
       if (footer) gsap.set(footer, { autoAlpha: 0, y: 28 })
 
       const tl = gsap.timeline({
-        scrollTrigger: { trigger: section, start: 'top 70%', once: true },
+        scrollTrigger: { trigger: section, start: 'top 90%', once: true },
       })
       tl.to(video, { scale: 1, autoAlpha: 1, duration: 1, ease: 'power2.out' }, 0)
       if (footer) {

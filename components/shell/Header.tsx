@@ -11,7 +11,7 @@ export function Header({ className }: Props) {
           shifted 3ch left inside a clipping wrapper, so when that role wraps
           the strip falls outside the clip — a wrapped line never starts with a
           stray dot. */}
-      <p className="font-body text-base mt-2 leading-snug overflow-hidden w-max max-w-full text-[var(--color-ink-soft)]">
+      <p className="font-body text-base mt-0 leading-snug overflow-hidden w-max max-w-full text-[var(--color-ink-soft)]">
         <span className="flex flex-wrap -ml-[3ch]">
           <span className="text-box whitespace-nowrap ml-[3ch]">Product Designer</span>
           <span className="text-box whitespace-nowrap">

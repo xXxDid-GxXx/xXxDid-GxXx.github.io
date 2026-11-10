@@ -101,3 +101,21 @@ body {
   -webkit-box-decoration-break: clone;
   box-decoration-break: clone;
 }
+
+/* "Scroll" cue on the case hero: the arrow nods downward until the page moves. */
+@keyframes scroll-cue-nod {
+  0%, 100% { transform: translateY(0); opacity: 0.55; }
+  50% { transform: translateY(6px); opacity: 1; }
+}
+.scroll-cue-arrow {
+  animation: scroll-cue-nod 1.4s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .scroll-cue-arrow { animation: none; }
+}
+
+/* Homepage case column: fades in when it mounts for the landed case. */
+@keyframes column-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}

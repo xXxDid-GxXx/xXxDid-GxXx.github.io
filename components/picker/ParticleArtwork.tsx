@@ -14,6 +14,10 @@ type Props = {
   /** Fires when a revealed shape has formed (fly-in settled), and when the
    *  artwork is told to hide — so the page can show text in step with the art. */
   onFormed?: () => void;
+  /** Fires once, the moment the first artwork is about to appear (its shape is
+   *  decoded and the fly-in starts) — or at once if nothing will be drawn. The
+   *  page keeps the stage black until then, so nothing half-loaded shows. */
+  onReveal?: () => void;
   className?: string;
 };
 
@@ -32,9 +36,17 @@ const HINT_REST_PX = 14;  // cursor movement per frame above this counts as "mov
  * and listens to the window for the cursor, taps and touch. One WebGL context
  * lives for the page; the shape swaps (morphs) with the focused case.
  */
-export function ParticleArtwork({ slug, entry = "scatter", onFormed, className = "" }: Props) {
+export function ParticleArtwork({ slug, entry = "scatter", onFormed, onReveal, className = "" }: Props) {
   const onFormedRef = useRef(onFormed);
   onFormedRef.current = onFormed;
+  const onRevealRef = useRef(onReveal);
+  onRevealRef.current = onReveal;
+  const revealedRef = useRef(false);
+  const reveal = () => {
+    if (revealedRef.current) return;
+    revealedRef.current = true;
+    onRevealRef.current?.();
+  };
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const engineRef = useRef<ParticleEngine | null>(null);
   const slugRef = useRef(slug);
@@ -56,8 +68,8 @@ export function ParticleArtwork({ slug, entry = "scatter", onFormed, className =
     if (!canvas) return;
     const engine = new ParticleEngine(canvas);
     engineRef.current = engine;
-    // No WebGL: nothing will ever form, so let the text show at once.
-    if (!engine.supported) { onFormedRef.current?.(); return; }
+    // No WebGL: nothing will ever form, so let the page show at once.
+    if (!engine.supported) { reveal(); onFormedRef.current?.(); return; }
     engine.onFormed = () => onFormedRef.current?.();
 
     const rm = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -153,12 +165,12 @@ export function ParticleArtwork({ slug, entry = "scatter", onFormed, className =
   useEffect(() => {
     const engine = engineRef.current;
     if (!engine?.supported) return;
-    if (!slug) { engine.hide(); onFormedRef.current?.(); return; }
+    if (!slug) { engine.hide(); reveal(); onFormedRef.current?.(); return; }
     let cancelled = false;
     getCaseShape(slug).then((shape) => {
       // Only reveal if this is still the wanted case by the time it decoded.
-      if (!cancelled && slugRef.current === slug) engine.show(shape, entryRef.current);
-    }).catch(() => { onFormedRef.current?.(); /* image missing: the card stays dark */ });
+      if (!cancelled && slugRef.current === slug) { reveal(); engine.show(shape, entryRef.current); }
+    }).catch(() => { reveal(); onFormedRef.current?.(); /* image missing: the card stays dark */ });
     return () => { cancelled = true; };
   }, [slug]);
 

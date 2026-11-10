@@ -1,4 +1,10 @@
-type Props = { className?: string };
+type Props = {
+  className?: string;
+  /** "button": outlined buttons (case footer). "chip": smaller and lighter,
+   *  for sitting under the name on the homepage without competing with the
+   *  case title and its "See full case" button. */
+  variant?: "button" | "chip";
+};
 
 const iconClass = "h-3.5 w-3.5 shrink-0";
 
@@ -26,14 +32,28 @@ function TelegramIcon() {
   );
 }
 
-export function ContactStrip({ className }: Props) {
+// Outlined controls that fill white on hover, so the contacts read as things
+// to press, not text. The button is a smaller cousin of the stage's "See full
+// case" button; the chip is lighter still: thinner, dimmer outline, tighter.
+const BASE =
+  "inline-flex cursor-pointer items-center whitespace-nowrap bg-transparent leading-none text-white transition-[background-color,color,border-color,transform] duration-200 ease-out hover:border-white hover:bg-white hover:text-[var(--color-ink)] active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black motion-reduce:transition-colors";
+const VARIANT = {
+  button: `${BASE} gap-2 border border-white/60 px-3 py-2 font-display text-sm font-bold`,
+  chip: `${BASE} gap-1.5 border border-white/35 bg-[#0E0E0E]/70 p-2 font-body text-xs md:px-2.5 md:py-1.5`,
+};
+// Chip labels show from md up; on phones the chips are icon-only squares.
+const CHIP_LABEL = "hidden md:inline";
+
+export function ContactStrip({ className, variant = "button" }: Props) {
+  const BUTTON = VARIANT[variant];
+  const label = variant === "chip" ? CHIP_LABEL : undefined;
   return (
     <nav aria-label="Contact" className={className}>
-      <ul className="flex gap-2 font-body text-sm list-none p-0 m-0">
+      <ul className={`m-0 flex list-none flex-wrap p-0 md:flex-nowrap ${variant === "chip" ? "gap-1.5" : "gap-2"}`}>
         <li>
-          <a href="tel:+48572161197" className="text-box inline-flex items-center gap-1 cursor-pointer hover:underline">
+          <a href="tel:+48572161197" className={BUTTON} aria-label="Phone">
             <PhoneIcon />
-            phone
+            <span className={label}>phone</span>
           </a>
         </li>
         <li>
@@ -41,10 +61,11 @@ export function ContactStrip({ className }: Props) {
             href="https://www.linkedin.com/in/hlib-didkovskyi-007518258/"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-box inline-flex items-center gap-1 cursor-pointer hover:underline"
+            className={BUTTON}
+            aria-label="LinkedIn"
           >
             <LinkedInIcon />
-            linkedin
+            <span className={label}>linkedin</span>
           </a>
         </li>
         <li>
@@ -52,10 +73,11 @@ export function ContactStrip({ className }: Props) {
             href="https://t.me/petroproseko_contact"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-box inline-flex items-center gap-1 cursor-pointer hover:underline"
+            className={BUTTON}
+            aria-label="Telegram"
           >
             <TelegramIcon />
-            telegram
+            <span className={label}>telegram</span>
           </a>
         </li>
       </ul>

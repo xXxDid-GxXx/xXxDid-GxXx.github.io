@@ -45,14 +45,16 @@ const INTRO_FILL_SCALE = 0.4;
 // it fades up from black — nothing on screen, then a spinning wheel appears.
 const INTRO_ENTRANCE_MS = 50;
 
-// Smooth, free scrolling — modelled on Lenis as used by Codrops' "Atelier
-// North" (duration-based cubic ease-out). The drum position is continuous:
-// wheel and trackpad input move it proportionally, it eases towards the target
-// and simply stops there — no snapping onto a case. The case nearest the
-// centre is the active one. Deliberate jumps (keys, taps, spins) still land
-// exactly on a case.
-const WHEEL_PX_PER_CASE = 240;  // wheel delta (px) that turns the drum by one case
-const WHEEL_SNAP_MS = 160;      // quiet time after the last wheel event before snapping to a case
+// Wheel / trackpad input steps the drum by whole cases, so a gentle scroll
+// can't overshoot the next one. Events are grouped into gestures (a burst with
+// no gap longer than WHEEL_GESTURE_GAP_MS). The first event of a gesture turns
+// the drum one case; only a hard, long scroll adds more, one extra case per
+// WHEEL_PX_PER_CASE of travel beyond WHEEL_SOFT_PX. Trackpad inertia tails
+// keep a gesture alive, which is why the soft allowance is generous. Drags
+// stay continuous (the drum follows the finger) and glide to a case.
+const WHEEL_GESTURE_GAP_MS = 250; // quiet time that ends a wheel gesture
+const WHEEL_SOFT_PX = 600;        // a gesture up to this much travel is exactly one case
+const WHEEL_PX_PER_CASE = 300;    // beyond that, each further chunk adds a case
 const WHEEL_EASE  = { type: "tween", duration: 0.9, ease: [0.33, 1, 0.68, 1] } as const; // cubic-out
 const SETTLE_EASE = { type: "tween", duration: 0.6, ease: [0.33, 1, 0.68, 1] } as const;
 const FLING_SECONDS = 0.3;      // drag release: glide on by velocity × this
@@ -142,6 +144,9 @@ export function Picker({ items, initialSlug = "healthcare-er", onFocusChange, in
   const drumRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (prefersReducedMotion) return;
+    // Not on touch devices: an SVG filter over the whole 3D drum is costly
+    // there and iOS WebKit tends to leave stale layer tiles behind it.
+    if (window.matchMedia("(hover: none)").matches) return;
     return velocity.on("change", (v) => {
       const blur = Math.min(MOTION_BLUR_MAX, Math.abs(v) * MOTION_BLUR_PER_SPEED);
       const drum = drumRef.current;
@@ -242,23 +247,33 @@ export function Picker({ items, initialSlug = "healthcare-er", onFocusChange, in
     goTo(Math.round(targetRef.current) + position, SETTLE_EASE);
   }, [goTo]);
 
-  // Wheel / trackpad: move the drum proportionally to the delta with a smooth
-  // ease-out while input keeps coming, then snap to the nearest case once it
-  // stops, so the wheel never rests between two cards.
+  // Wheel / trackpad: whole-case steps per gesture (see the constants above).
   useEffect(() => {
-    let snapTimer: ReturnType<typeof setTimeout> | undefined;
+    let gapTimer: ReturnType<typeof setTimeout> | undefined;
+    let travel = 0;   // px scrolled in the current gesture
+    let stepped = 0;  // cases already turned for it
+    let dir = 0;      // its direction (+1 down / -1 up); a reversal starts a new gesture
+    const endGesture = () => { travel = 0; stepped = 0; dir = 0; };
     const handleWheel = (e: WheelEvent) => {
       e.preventDefault();
       if (introActiveRef.current || gambleSpinningRef.current) return;
       // Normalise line/page wheel modes to pixels.
       const dy = e.deltaY * (e.deltaMode === 1 ? 33 : e.deltaMode === 2 ? window.innerHeight : 1);
       if (dy === 0) return;
-      goTo(targetRef.current + dy / WHEEL_PX_PER_CASE, WHEEL_EASE);
-      if (snapTimer) clearTimeout(snapTimer);
-      snapTimer = setTimeout(() => goTo(Math.round(targetRef.current), SETTLE_EASE), WHEEL_SNAP_MS);
+      const d = Math.sign(dy);
+      if (d !== dir) endGesture();
+      dir = d;
+      travel += Math.abs(dy);
+      const steps = 1 + Math.floor(Math.max(0, travel - WHEEL_SOFT_PX) / WHEEL_PX_PER_CASE);
+      if (steps > stepped) {
+        goTo(Math.round(targetRef.current) + d * (steps - stepped), stepped === 0 ? SETTLE_EASE : WHEEL_EASE);
+        stepped = steps;
+      }
+      if (gapTimer) clearTimeout(gapTimer);
+      gapTimer = setTimeout(endGesture, WHEEL_GESTURE_GAP_MS);
     };
     window.addEventListener("wheel", handleWheel, { passive: false });
-    return () => { window.removeEventListener("wheel", handleWheel); if (snapTimer) clearTimeout(snapTimer); };
+    return () => { window.removeEventListener("wheel", handleWheel); if (gapTimer) clearTimeout(gapTimer); };
   }, [goTo]);
 
   // Slot-machine intro: when `intro` turns on, spin the drum through a few

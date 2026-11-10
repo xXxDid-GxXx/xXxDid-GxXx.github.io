@@ -43,7 +43,8 @@ interface Props {
 /**
  * Act 3 — pinned story slideshow. Slides are stacked and cycle one at a time
  * across 75% of scroll per slide: the image fades in, the title and paragraphs
- * appear one by one, and the slide fades out before the next appears. Images open in a lightbox on click. The slide count is free
+ * appear one by one, and the slide fades out before the next appears. The
+ * first slide instead reveals itself while the section scrolls into view. Images open in a lightbox on click. The slide count is free
  * to vary (the timeline is built from whatever [data-slide] elements exist).
  */
 export function CaseStorySlideshow({ slides }: Props) {
@@ -99,20 +100,61 @@ export function CaseStorySlideshow({ slides }: Props) {
       }
 
       let tl: ReturnType<typeof gsap.timeline> | undefined
+      let entry: ReturnType<typeof gsap.timeline> | undefined
       let resizeTimer: ReturnType<typeof setTimeout>
+
+      // Timeline geometry, in "slots" (one slot = 75% of a viewport of scroll).
+      // The first slide reveals itself while the section scrolls into view, so
+      // its slot is only a short hold plus the fade-out; every later slide gets
+      // a full slot: image in, lines in one by one, hold, fade out.
+      const FIRST = 0.3
+      const HOLD = 0.72 // slot progress where a slide is fully revealed and holding
+      const startOf = (i: number) => (i === 0 ? 0 : FIRST + (i - 1))
+      const total = FIRST + (slideEls.length - 1)
+      // Resting points for the wheel snap below: the section start (first
+      // slide in full), each later slide fully revealed, and the section end.
+      const restPoints = [0, ...slideEls.slice(1).map((_, k) => FIRST + k + HOLD), total]
+
+      // Mouse wheels move in coarse ticks, so a reader can easily come to rest
+      // between two slides, on a dark frame with nothing on it. Once the wheel
+      // goes quiet, glide to the nearest resting point in the direction they
+      // were going. Trackpads get the same treatment; it's harmless there.
+      const DRIFT = 0.12 // less than this past a resting point counts as "still there"
+      let wheelTimer: ReturnType<typeof setTimeout> | undefined
+      let wheelDir = 1
+      const snapToSlide = () => {
+        const lenis = getLenis()
+        const st = tl?.scrollTrigger
+        if (!lenis || !st) return
+        const span = st.end - st.start
+        const p = ((lenis.targetScroll - st.start) / span) * total // position in slots
+        if (p <= 0 || p >= total) return
+        const below = Math.max(...restPoints.filter((v) => v <= p))
+        const above = Math.min(...restPoints.filter((v) => v >= p))
+        const target =
+          wheelDir > 0 ? (p - below < DRIFT ? below : above) : above - p < DRIFT ? above : below
+        lenis.scrollTo(st.start + (target / total) * span, {
+          duration: 0.9,
+          easing: (t: number) => 1 - (1 - t) ** 3,
+        })
+      }
+      const onWheel = (e: WheelEvent) => {
+        if (e.deltaY !== 0) wheelDir = e.deltaY > 0 ? 1 : -1
+        clearTimeout(wheelTimer)
+        wheelTimer = setTimeout(snapToSlide, 160)
+      }
+      window.addEventListener('wheel', onWheel, { passive: true })
 
       function build() {
         tl?.kill()
+        entry?.kill()
         ScrollTrigger.getAll()
           .filter((t) => t.trigger === section)
           .forEach((t) => t.kill())
 
-        const n = slideEls.length
-
-        // Pin the section and cycle slides across n × 75% of scroll. Each
-        // slide owns a 1.0 slot: the image fades in, then the title and each
-        // paragraph appear one after another, everything holds, and the whole
-        // slide fades out before the next one starts. No zooming or flying.
+        // Pin the section and cycle slides across the timeline. No zooming or
+        // flying: images and lines fade in, hold, and the slide fades out
+        // before the next one starts.
         tl = gsap.timeline({
           defaults: { ease: 'power1.out' },
           scrollTrigger: {
@@ -120,7 +162,7 @@ export function CaseStorySlideshow({ slides }: Props) {
             pin: true,
             pinSpacing: true,
             start: 'top top',
-            end: `+=${n * 75}%`,
+            end: `+=${total * 75}%`,
             // Lenis already smooths the scroll, so the timeline tracks it
             // directly (no extra scrub lag, no snapping — free scrolling).
             scrub: true,
@@ -145,25 +187,41 @@ export function CaseStorySlideshow({ slides }: Props) {
           ;[media, text, ...lines].forEach(
             (el) => el && gsap.set(el, { clearProps: 'opacity,visibility,transform' }),
           )
-          gsap.set(slide, { autoAlpha: 0 })
           if (media) gsap.set(media, { autoAlpha: 0 })
           gsap.set(lines, { autoAlpha: 0, y: 14 })
 
-          tl!.set(slide, { autoAlpha: 1 }, i)
-          if (media) tl!.to(media, { autoAlpha: 1, duration: imageIn }, i)
+          const at = startOf(i)
+          const slot = i === 0 ? FIRST : 1
 
-          // Spread the lines evenly across the text window; each one takes a
-          // generous share of it so the reveal reads as gradual, not a pop.
-          const step = lines.length ? (textUntil - textFrom) / lines.length : 0
-          lines.forEach((line, j) => {
-            tl!.to(
-              line,
-              { autoAlpha: 1, y: 0, duration: step * 1.6 },
-              i + textFrom + j * step,
-            )
-          })
+          if (i === 0) {
+            // Revealed while the section rises into view (before the pin), so
+            // the reader never scrolls through a blank dark screen to reach it.
+            entry = gsap.timeline({
+              scrollTrigger: { trigger: section, start: 'top bottom', end: 'top top', scrub: true },
+            })
+            if (media) entry.to(media, { autoAlpha: 1, duration: 0.35 }, 0)
+            const step = lines.length ? 0.6 / lines.length : 0
+            lines.forEach((line, j) => {
+              entry!.to(line, { autoAlpha: 1, y: 0, duration: 0.3 }, 0.15 + j * step)
+            })
+          } else {
+            gsap.set(slide, { autoAlpha: 0 })
+            tl!.set(slide, { autoAlpha: 1 }, at)
+            if (media) tl!.to(media, { autoAlpha: 1, duration: imageIn }, at)
 
-          tl!.to(slide, { autoAlpha: 0, duration: fadeOut, ease: 'power1.in' }, i + 1 - fadeOut)
+            // Spread the lines evenly across the text window; each one takes a
+            // generous share of it so the reveal reads as gradual, not a pop.
+            const step = lines.length ? (textUntil - textFrom) / lines.length : 0
+            lines.forEach((line, j) => {
+              tl!.to(
+                line,
+                { autoAlpha: 1, y: 0, duration: step * 1.6 },
+                at + textFrom + j * step,
+              )
+            })
+          }
+
+          tl!.to(slide, { autoAlpha: 0, duration: fadeOut, ease: 'power1.in' }, at + slot - fadeOut)
         })
       }
 
@@ -188,11 +246,14 @@ export function CaseStorySlideshow({ slides }: Props) {
 
       cleanup = () => {
         tl?.kill()
+        entry?.kill()
         ScrollTrigger.getAll()
           .filter((t) => t.trigger === section)
           .forEach((t) => t.kill())
         window.removeEventListener('resize', onResize)
+        window.removeEventListener('wheel', onWheel)
         clearTimeout(resizeTimer)
+        clearTimeout(wheelTimer)
       }
     }
 

@@ -38,16 +38,19 @@ export function CaseCinematic({ slug, accent, data, nextCase }: Props) {
           the dark hero (#0E0E0E) and the light reading canvas (#FAFAFA):
           — on dark: |#FFF − #0E0E0E| ≈ white  → stays white
           — on light: |#FFF − #FAFAFA| ≈ black  → inverts to near-black
-          On phones the content scrolls under it, so it gets a solid bar. */}
+          On phones it is a sticky bar: it stays reachable while reading, and
+          unlike a fixed bar (which iOS Chrome leaves hanging mid-screen when
+          its address bar collapses and the page grows up under it) a sticky
+          one lives in the page flow and keeps to the real top of the page. */}
       <nav
-        className="fixed top-0 left-0 right-0 z-50 px-[var(--space-gutter)] py-4 pointer-events-none bg-[#0E0E0E]/90 backdrop-blur-sm md:bg-transparent md:backdrop-blur-none md:mix-blend-difference"
+        className="sticky top-0 z-50 bg-[#0E0E0E]/90 px-[var(--space-gutter)] py-4 backdrop-blur-sm md:pointer-events-none md:fixed md:top-0 md:left-0 md:right-0 md:bg-transparent md:backdrop-blur-none md:mix-blend-difference"
         aria-label="Case navigation"
       >
         <Link
           href={`/?case=${slug}`}
-          className="font-body text-sm text-white pointer-events-auto hover:opacity-60 transition-opacity"
+          className="font-body text-sm text-white md:pointer-events-auto hover:opacity-60 transition-opacity"
         >
-          ← back to the wheel
+          ← back
         </Link>
       </nav>
 
@@ -66,7 +69,7 @@ export function CaseCinematic({ slug, accent, data, nextCase }: Props) {
       {/* ── Reading content ───────────────────────────────────────────────
           Light canvas matches other cases; holds the story slideshow and the
           outro video with the footer overlaid on it.                        */}
-      <div className="bg-[var(--color-bg)]">
+      <div className="relative z-10 bg-[var(--color-bg)]">
         <main>
           {/* Act 3 — story slideshow */}
           {data.slides.length > 0 && <CaseStorySlideshow slides={data.slides} />}

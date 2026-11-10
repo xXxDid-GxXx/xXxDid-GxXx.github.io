@@ -22,7 +22,7 @@ export function CaseLayout({ slug, nextCase, accentColor, children }: Props) {
           href={`/?case=${slug}`}
           className="font-body text-sm text-[var(--color-ink-soft)] hover:text-[var(--color-ink)] transition-colors"
         >
-          ← back to the wheel
+          ← back
         </Link>
       </header>
 
