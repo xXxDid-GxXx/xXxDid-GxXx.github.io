@@ -22,7 +22,8 @@ export default function HomePage() {
       <HomeStage
         items={pickerItems}
         header={<Header />}
-        contactStrip={<ContactStrip variant="button" stacked />}
+        contactStrip={<ContactStrip variant="chip" />}
+        contactMenu={<ContactStrip variant="button" stacked />}
       />
 
       {/* Section 3.6: always-rendered sr-only list — #case-list anchor target */}
