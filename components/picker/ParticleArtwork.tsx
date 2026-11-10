@@ -211,10 +211,15 @@ export function ParticleArtwork({ slug, entry = "scatter", onFormed, onReveal, c
           .catch((err) => reportMotion("status", `waiting for a tap (${err?.message ?? err})`));
       }
     }
-    // iOS only grants the request inside a real gesture: touch release / click.
+    // iOS only grants the request inside a real gesture. Ask at the very
+    // first touch of any kind (even the start of a swipe); if WebKit doesn't
+    // count that one, the refusal resets the flag and the release / click
+    // asks again. Once granted, the load-time request above succeeds on the
+    // session's later visits, so no tap is needed then.
     const onGestureOrientation = () => { if (touchDevice && needsPermission && window.isSecureContext && !orientationOn) askOrientation(); };
 
     window.addEventListener("pointermove", onMove, { passive: true });
+    window.addEventListener("touchstart", onGestureOrientation, { passive: true });
     window.addEventListener("touchend", onGestureOrientation, { passive: true });
     window.addEventListener("click", onGestureOrientation);
     window.addEventListener("pointerdown", onDown, { passive: true });
@@ -227,6 +232,7 @@ export function ParticleArtwork({ slug, entry = "scatter", onFormed, onReveal, c
       rm.removeEventListener("change", onRm);
       ro.disconnect();
       window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("touchstart", onGestureOrientation);
       window.removeEventListener("touchend", onGestureOrientation);
       window.removeEventListener("click", onGestureOrientation);
       window.removeEventListener("pointerdown", onDown);
