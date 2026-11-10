@@ -3,6 +3,7 @@
 import { useEffect, useRef } from 'react'
 import type { CinematicRevealPanel } from '@/types/cinematic'
 import { isMobileViewport } from '@/lib/breakpoints'
+import { riseIn } from './CaseStorySlideshow'
 
 interface Props {
   /** One or two panels: [dark] or [dark, light]. */
@@ -44,11 +45,11 @@ export function CaseRevealPanels({ panels }: Props) {
       const panel2  = panel2Ref.current
       if (!wrapper || !panel1) return
 
-      // Phones: the panels are plain stacked sections — just show the text.
+      // Phones: the panels are plain stacked sections; each line rises in
+      // from the bottom-right as it scrolls into view.
       if (isMobileViewport()) {
-        wrapper.querySelectorAll<HTMLElement>('[data-reveal-item]').forEach((el) => {
-          el.style.opacity = '1'
-        })
+        const risers = riseIn(gsap, Array.from(wrapper.querySelectorAll<HTMLElement>('[data-reveal-item]')))
+        cleanupFn = () => risers.forEach((t) => t.kill())
         return
       }
 

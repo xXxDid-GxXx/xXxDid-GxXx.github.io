@@ -38,8 +38,8 @@ function TelegramIcon() {
 const BASE =
   "inline-flex cursor-pointer items-center whitespace-nowrap bg-transparent leading-none text-white transition-[background-color,color,border-color,transform] duration-200 ease-out hover:border-white hover:bg-white hover:text-[var(--color-ink)] active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black motion-reduce:transition-colors";
 const VARIANT = {
-  button: `${BASE} gap-2 border border-white/60 px-3 py-2 font-display text-sm font-bold`,
-  chip: `${BASE} gap-1.5 border border-white/35 bg-[#0E0E0E]/70 p-2 font-body text-xs md:px-2.5 md:py-1.5`,
+  button: `${BASE} gap-2 border border-white/60 px-4 py-3 font-display text-sm font-bold md:px-3 md:py-2`,
+  chip: `${BASE} gap-1.5 border border-white/35 bg-[#0E0E0E]/70 p-[14px] font-body text-xs md:px-2.5 md:py-1.5`,
 };
 // Chip labels show from md up; on phones the chips are icon-only squares.
 const CHIP_LABEL = "hidden md:inline";

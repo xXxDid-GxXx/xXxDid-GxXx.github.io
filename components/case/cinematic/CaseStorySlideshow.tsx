@@ -41,6 +41,33 @@ interface Props {
 }
 
 /**
+ * Phone entrance for the acts after the hero: each element fades in while
+ * sliding from the bottom-right to its place, the first time it scrolls into
+ * view. Reduced motion just shows it. Returns the tweens so they can be killed.
+ */
+export function riseIn(gsap: typeof import('gsap')['gsap'], els: HTMLElement[]) {
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  return els.map((el) => {
+    if (reduce) {
+      gsap.set(el, { autoAlpha: 1, x: 0, y: 0 })
+      return gsap.to(el, { duration: 0 })
+    }
+    return gsap.fromTo(
+      el,
+      { autoAlpha: 0, x: 28, y: 28 },
+      {
+        autoAlpha: 1,
+        x: 0,
+        y: 0,
+        duration: 0.7,
+        ease: 'power2.out',
+        scrollTrigger: { trigger: el, start: 'top 92%', once: true },
+      },
+    )
+  })
+}
+
+/**
  * Act 3 — pinned story slideshow. Slides are stacked and cycle one at a time
  * across 75% of scroll per slide: the image fades in, the title and paragraphs
  * appear one by one, and the slide fades out before the next appears. The
@@ -88,14 +115,14 @@ export function CaseStorySlideshow({ slides }: Props) {
       if (!slideEls.length) return
 
       // Phones: slides are plain stacked blocks in the page flow — no pin, no
-      // timeline. Reveal everything the desktop layout hides until GSAP runs.
+      // timeline. Each image and text block rises in from the bottom-right as
+      // it scrolls into view, once.
       if (isMobileViewport()) {
-        section
-          .querySelectorAll<HTMLElement>('[data-slide-media], [data-slide-text]')
-          .forEach((el) => {
-            el.style.opacity = '1'
-            el.style.visibility = 'visible'
-          })
+        const risers = riseIn(
+          gsap,
+          Array.from(section.querySelectorAll<HTMLElement>('[data-slide-media], [data-slide-text]')),
+        )
+        cleanup = () => risers.forEach((t) => t.kill())
         return
       }
 

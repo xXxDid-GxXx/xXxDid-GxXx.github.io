@@ -48,7 +48,7 @@ export function CaseCinematic({ slug, accent, data, nextCase }: Props) {
       >
         <Link
           href={`/?case=${slug}`}
-          className="font-body text-sm text-white md:pointer-events-auto hover:opacity-60 transition-opacity"
+          className="-mx-3 -my-2 inline-block px-3 py-2 font-body text-sm text-white md:pointer-events-auto hover:opacity-60 transition-opacity"
         >
           ← back
         </Link>

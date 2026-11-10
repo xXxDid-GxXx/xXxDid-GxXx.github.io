@@ -40,10 +40,10 @@ const T = {
 
 // Small square arrow buttons beside the counter (same family as the chips).
 const ARROW =
-  "inline-flex h-8 w-8 cursor-pointer items-center justify-center border border-white/35 bg-[#0E0E0E]/70 font-body text-sm leading-none text-white transition-[background-color,color,border-color,transform] duration-200 ease-out hover:border-white hover:bg-white hover:text-[var(--color-ink)] active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white motion-reduce:transition-colors";
+  "inline-flex h-11 w-11 cursor-pointer items-center justify-center border border-white/35 md:h-8 md:w-8 bg-[#0E0E0E]/70 font-body text-sm leading-none text-white transition-[background-color,color,border-color,transform] duration-200 ease-out hover:border-white hover:bg-white hover:text-[var(--color-ink)] active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white motion-reduce:transition-colors";
 
 // The button style on the stage: outlined, filling white on hover.
-const BUTTON = `${T.action} group pointer-events-auto inline-flex cursor-pointer items-center gap-2 whitespace-nowrap border border-white/70 bg-transparent px-4 py-3 text-white transition-[background-color,color,transform,border-color,opacity] duration-200 ease-out hover:border-white hover:bg-white hover:text-[var(--color-ink)] active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black motion-reduce:transition-colors disabled:cursor-not-allowed`;
+const BUTTON = `${T.action} group pointer-events-auto inline-flex cursor-pointer items-center gap-2 whitespace-nowrap border border-white/70 bg-transparent px-5 py-4 text-white transition-[background-color,color,transform,border-color,opacity] md:px-4 md:py-3 duration-200 ease-out hover:border-white hover:bg-white hover:text-[var(--color-ink)] active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black motion-reduce:transition-colors disabled:cursor-not-allowed`;
 
 export function HomeStage({ items, header, contactStrip }: Props) {
   // True while the wheel is turning; the text column steps aside meanwhile.
