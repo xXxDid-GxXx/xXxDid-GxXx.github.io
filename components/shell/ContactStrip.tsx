@@ -4,6 +4,8 @@ type Props = {
    *  for sitting under the name on the homepage without competing with the
    *  case title and its "See full case" button. */
   variant?: "button" | "chip";
+  /** Stack the three vertically (the homepage's contact menu). */
+  stacked?: boolean;
 };
 
 const iconClass = "h-3.5 w-3.5 shrink-0";
@@ -38,18 +40,22 @@ function TelegramIcon() {
 const BASE =
   "inline-flex cursor-pointer items-center whitespace-nowrap bg-transparent leading-none text-white transition-[background-color,color,border-color,transform] duration-200 ease-out hover:border-white hover:bg-white hover:text-[var(--color-ink)] active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black motion-reduce:transition-colors";
 const VARIANT = {
-  button: `${BASE} gap-2 border border-white/60 px-4 py-3 font-display text-sm font-bold md:px-3 md:py-2`,
+  button: `${BASE} gap-2 border border-white/60 px-4 py-[15px] font-display text-sm font-bold md:px-3 md:py-2`,
   chip: `${BASE} gap-1.5 border border-white/35 bg-[#0E0E0E]/70 p-[14px] font-body text-xs md:px-2.5 md:py-1.5`,
 };
 // Chip labels show from md up; on phones the chips are icon-only squares.
 const CHIP_LABEL = "hidden md:inline";
 
-export function ContactStrip({ className, variant = "button" }: Props) {
+export function ContactStrip({ className, variant = "button", stacked = false }: Props) {
   const BUTTON = VARIANT[variant];
   const label = variant === "chip" ? CHIP_LABEL : undefined;
   return (
     <nav aria-label="Contact" className={className}>
-      <ul className={`m-0 flex list-none flex-wrap p-0 md:flex-nowrap ${variant === "chip" ? "gap-1.5" : "gap-2"}`}>
+      <ul
+        className={`m-0 flex list-none p-0 ${stacked ? "flex-col items-stretch" : "flex-wrap md:flex-nowrap"} ${
+          variant === "chip" ? "gap-1.5" : "gap-2"
+        }`}
+      >
         <li>
           <a href="tel:+48572161197" className={BUTTON} aria-label="Phone">
             <PhoneIcon />

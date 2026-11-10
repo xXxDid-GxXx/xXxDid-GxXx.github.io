@@ -38,6 +38,19 @@ const T = {
   action: "font-display text-sm font-bold leading-none",
 };
 
+function MailIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden className="h-4 w-4">
+      <rect x="3" y="5" width="18" height="14" rx="1.5" />
+      <path d="M3.5 6.5 12 13l8.5-6.5" />
+    </svg>
+  );
+}
+
+// The Contact toggle, top-right: same family as the arrows and chips.
+const CONTACT =
+  "inline-flex h-11 w-11 cursor-pointer items-center justify-center gap-2 border border-white/35 bg-[#0E0E0E]/70 font-body text-xs uppercase tracking-[0.15em] leading-none text-white md:w-auto transition-[background-color,color,border-color,transform] duration-200 ease-out hover:border-white hover:bg-white hover:text-[var(--color-ink)] active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white motion-reduce:transition-colors md:h-8 md:px-3";
+
 // Small square arrow buttons beside the counter (same family as the chips).
 const ARROW =
   "inline-flex h-11 w-11 cursor-pointer items-center justify-center border border-white/35 md:h-8 md:w-8 bg-[#0E0E0E]/70 font-body text-sm leading-none text-white transition-[background-color,color,border-color,transform] duration-200 ease-out hover:border-white hover:bg-white hover:text-[var(--color-ink)] active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white motion-reduce:transition-colors";
@@ -132,6 +145,25 @@ export function HomeStage({ items, header, contactStrip }: Props) {
   }, [scrolling]);
   const nudgeArrow = hint.on && !hint.cursor;
 
+  // Contact menu: one "Contact" button top-right; it opens the three ways to
+  // reach me beneath it. Closes on Escape, on a click outside, or on a second
+  // press. Keeps the contacts off the artwork until they are wanted.
+  const [contactOpen, setContactOpen] = useState(false);
+  const contactRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!contactOpen) return;
+    const onDown = (e: PointerEvent) => {
+      if (!contactRef.current?.contains(e.target as Node)) setContactOpen(false);
+    };
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setContactOpen(false); };
+    document.addEventListener("pointerdown", onDown);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("pointerdown", onDown);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [contactOpen]);
+
   return (
     <>
       {/* Picker — full-bleed: the wheel's cards fill the whole screen, so the
@@ -160,10 +192,9 @@ export function HomeStage({ items, header, contactStrip }: Props) {
           text ROLLS through cases as the wheel spins, settling on the landed
           case in place. */}
       <div className="pointer-events-none absolute inset-y-0 left-0 z-20 flex w-full flex-col justify-between px-[var(--space-gutter)] py-[max(var(--space-loose),var(--space-gutter))] md:w-auto md:max-w-[min(40vw,440px)]">
-        <div className={`pointer-events-auto flex flex-col items-start gap-5 self-start ${chrome}`}>
-          {header}
-          {contactStrip}
-        </div>
+        {/* Room on the right for the Contact button on phones, so a long
+            roles line wraps instead of running under it. */}
+        <div className={`pointer-events-auto self-start pr-14 md:pr-0 ${chrome}`}>{header}</div>
 
         {/* Focused case — eyebrow, title, summary, role and the link to the
             case. The block is unmounted while the wheel turns and mounted
@@ -211,15 +242,45 @@ export function HomeStage({ items, header, contactStrip }: Props) {
         <div aria-hidden />
       </div>
 
-      {/* Counter and previous / next arrows, as one block: the counter above,
-          the arrows under it, right-aligned. Top-right on larger screens,
-          where the counter also carries the focused case's name — it tracks
-          the wheel live, reading out the cases while the case column is
-          hidden. On phones the top is the header's, so the block sits
-          bottom-right, level with the "See full case" button. The arrows
-          point the way the wheel turns, doubling as the swipe hint. */}
+      {/* Top right — the Contact button and its menu (see the hook above). */}
       <div
-        className={`absolute right-[var(--space-gutter)] bottom-[calc(max(var(--space-loose),var(--space-gutter))+1.5rem)] z-20 flex flex-col items-end gap-2 md:bottom-auto md:top-[max(var(--space-loose),var(--space-gutter))] ${chrome}`}
+        ref={contactRef}
+        className={`pointer-events-auto absolute right-[var(--space-gutter)] top-[max(var(--space-loose),var(--space-gutter))] z-30 flex flex-col items-end gap-2 ${chrome}`}
+      >
+        <button
+          type="button"
+          onClick={() => setContactOpen((o) => !o)}
+          aria-expanded={contactOpen}
+          aria-controls="contact-menu"
+          aria-label={contactOpen ? "Close contact menu" : "Contact"}
+          className={CONTACT}
+        >
+          {/* Phones: an icon (the header needs the width); larger: the word. */}
+          <span className="hidden md:inline">Contact</span>
+          <span aria-hidden className="inline-block w-3 text-center md:hidden">
+            {contactOpen ? "×" : <MailIcon />}
+          </span>
+          <span aria-hidden className="hidden w-3 text-center md:inline-block">{contactOpen ? "×" : "+"}</span>
+        </button>
+        {contactOpen && (
+          <div
+            id="contact-menu"
+            className="animate-[column-in_200ms_ease-out_both] border border-white/15 bg-[#0E0E0E]/95 p-2"
+          >
+            {contactStrip}
+          </div>
+        )}
+      </div>
+
+      {/* Counter and previous / next arrows, as one block: the counter above,
+          the arrows under it, right-aligned. On larger screens they sit under
+          the Contact button, and the counter also carries the focused case's
+          name — it tracks the wheel live, reading out the cases while the
+          case column is hidden. On phones the top is the header's, so the
+          block sits bottom-right, level with the "See full case" button. The
+          arrows point the way the wheel turns, doubling as the swipe hint. */}
+      <div
+        className={`absolute right-[var(--space-gutter)] bottom-[calc(max(var(--space-loose),var(--space-gutter))+1.5rem)] z-20 flex flex-col items-end gap-2 md:bottom-auto md:top-[calc(max(var(--space-loose),var(--space-gutter))+3.25rem)] ${chrome}`}
       >
         <span className={`pointer-events-none text-box tabular-nums ${T.meta}`}>
           <span className="hidden md:inline">{focusedItem?.title} · </span>
