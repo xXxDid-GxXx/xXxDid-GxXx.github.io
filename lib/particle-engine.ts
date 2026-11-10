@@ -677,8 +677,8 @@ export class ParticleEngine {
       targetY = Math.max(-1, Math.min(1, (this.pointer.x - cx) / (width / 2))) * TUNING.TILT;
       targetX = -Math.max(-1, Math.min(1, (this.pointer.y - cy) / (height / 2))) * TUNING.TILT;
     } else if (this.orient.active) {
-      targetY = this.orient.x * TUNING.TILT * 1.3;
-      targetX = -this.orient.y * TUNING.TILT * 1.3;
+      targetY = this.orient.x * TUNING.TILT * 1.6;
+      targetX = -this.orient.y * TUNING.TILT * 1.6;
     } else if (!this.reducedMotion) {
       targetY = Math.sin(t * 0.31) * TUNING.TILT * 0.25;
       targetX = Math.cos(t * 0.23) * TUNING.TILT * 0.15;

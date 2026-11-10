@@ -52,7 +52,7 @@ function MailIcon() {
 
 // The Contact toggle, under the name on phones: same family as the arrows and chips.
 const CONTACT =
-  "inline-flex h-11 cursor-pointer items-center gap-2 border border-white/35 bg-[#0E0E0E]/70 px-4 font-body text-xs uppercase tracking-[0.15em] leading-none text-white transition-[background-color,color,border-color,transform] duration-200 ease-out hover:border-white hover:bg-white hover:text-[var(--color-ink)] active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white motion-reduce:transition-colors";
+  "inline-flex h-11 w-11 cursor-pointer items-center justify-center border border-white/35 bg-[#0E0E0E]/70 text-white transition-[background-color,color,border-color,transform] duration-200 ease-out hover:border-white hover:bg-white hover:text-[var(--color-ink)] active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white motion-reduce:transition-colors";
 
 // Small square arrow buttons beside the counter (same family as the chips).
 const ARROW =
@@ -208,11 +208,10 @@ export function HomeStage({ items, header, contactStrip, contactMenu }: Props) {
               onClick={() => setContactOpen((o) => !o)}
               aria-expanded={contactOpen}
               aria-controls="contact-menu"
+              aria-label={contactOpen ? "Close contact menu" : "Contact"}
               className={CONTACT}
             >
-              <MailIcon />
-              Contact
-              <span aria-hidden className="inline-block w-3 text-center">{contactOpen ? "×" : "+"}</span>
+              {contactOpen ? <span aria-hidden className="text-base leading-none">×</span> : <MailIcon />}
             </button>
             {contactOpen && (
               <div
