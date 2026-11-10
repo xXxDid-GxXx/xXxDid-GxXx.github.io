@@ -24,6 +24,11 @@ type Props = {
 // Taps shorter than this and moving less than this count as a click → burst.
 const TAP_MS = 350;
 const TAP_PX = 8;
+// Phone tilt: degrees of lean that give the full tilt, and how fast the
+// "neutral" holding angle follows the phone (so any comfortable grip is the
+// rest position and only movement away from it tilts the artwork).
+const TILT_FULL_DEG = 22;
+const TILT_REST_FOLLOW = 0.012;
 // Cursor hint ("click me"): appears a moment after the cursor settles over the
 // subject, stays briefly, fades. Shown until the visitor bursts the shape once.
 const HINT_DELAY_MS = 500;
@@ -68,6 +73,8 @@ export function ParticleArtwork({ slug, entry = "scatter", onFormed, onReveal, c
     if (!canvas) return;
     const engine = new ParticleEngine(canvas);
     engineRef.current = engine;
+    // Dev only: lets the headless checks read the engine's state.
+    if (process.env.NODE_ENV !== "production") (window as unknown as { __particleEngine?: ParticleEngine }).__particleEngine = engine;
     // No WebGL: nothing will ever form, so let the page show at once.
     if (!engine.supported) { reveal(); onFormedRef.current?.(); return; }
     engine.onFormed = () => onFormedRef.current?.();
@@ -138,7 +145,49 @@ export function ParticleArtwork({ slug, entry = "scatter", onFormed, onReveal, c
       if (e.pointerType !== "mouse") engine.setPointer(x, y, false);
     };
     const onLeave = () => { engine.setPointer(0, 0, false); hideHint(); };
+
+    // Phone tilt → artwork tilt. Orientation events need a secure context,
+    // and on iOS a permission that can only be requested from a tap, so the
+    // request rides on the first touch; a refusal just leaves the drift.
+    type OrientationCtor = typeof DeviceOrientationEvent & { requestPermission?: () => Promise<"granted" | "denied"> };
+    const touchDevice = window.matchMedia("(hover: none)").matches;
+    let restBeta: number | null = null;
+    let orientationOn = false;
+    const onOrientation = (e: DeviceOrientationEvent) => {
+      if (e.beta == null || e.gamma == null || rm.matches) return;
+      // Portrait: gamma leans left/right, beta tips toward/away. Landscape
+      // swaps them (and flips with the side the phone is turned to).
+      const angle = (screen.orientation?.angle ?? 0) % 360;
+      let lean = e.gamma, tip = e.beta;
+      if (angle === 90) { lean = e.beta; tip = -e.gamma; }
+      else if (angle === 270) { lean = -e.beta; tip = e.gamma; }
+      if (restBeta === null) restBeta = tip;
+      restBeta += (tip - restBeta) * TILT_REST_FOLLOW;
+      engine.setOrientation(lean / TILT_FULL_DEG, (tip - restBeta) / TILT_FULL_DEG, true);
+    };
+    const startOrientation = () => {
+      if (orientationOn) return;
+      orientationOn = true;
+      window.addEventListener("deviceorientation", onOrientation, { passive: true });
+    };
+    const Ctor = (typeof DeviceOrientationEvent !== "undefined" ? DeviceOrientationEvent : undefined) as OrientationCtor | undefined;
+    const needsPermission = !!Ctor?.requestPermission;
+    let permissionAsked = false;
+    const askOrientation = () => {
+      if (permissionAsked || !Ctor?.requestPermission) return;
+      permissionAsked = true;
+      Ctor.requestPermission().then((state) => { if (state === "granted") startOrientation(); }).catch(() => {});
+    };
+    // Chrome also exposes requestPermission but grants it without a gesture;
+    // iOS rejects until a tap, so a refusal here just defers to the first touch.
+    if (touchDevice && Ctor && window.isSecureContext) {
+      if (!needsPermission) startOrientation();
+      else Ctor.requestPermission!().then((state) => { if (state === "granted") startOrientation(); }).catch(() => {});
+    }
+    const onDownOrientation = () => { if (touchDevice && needsPermission && window.isSecureContext && !orientationOn) askOrientation(); };
+
     window.addEventListener("pointermove", onMove, { passive: true });
+    window.addEventListener("pointerdown", onDownOrientation, { passive: true });
     window.addEventListener("pointerdown", onDown, { passive: true });
     window.addEventListener("pointerup", onUp, { passive: true });
     window.addEventListener("pointercancel", onLeave);
@@ -149,7 +198,9 @@ export function ParticleArtwork({ slug, entry = "scatter", onFormed, onReveal, c
       rm.removeEventListener("change", onRm);
       ro.disconnect();
       window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("pointerdown", onDownOrientation);
       window.removeEventListener("pointerdown", onDown);
+      window.removeEventListener("deviceorientation", onOrientation);
       window.removeEventListener("pointerup", onUp);
       window.removeEventListener("pointercancel", onLeave);
       document.removeEventListener("pointerleave", onLeave);

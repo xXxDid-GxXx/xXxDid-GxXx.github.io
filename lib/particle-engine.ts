@@ -293,6 +293,9 @@ export class ParticleEngine {
   private vertices = new Float32Array(0);
 
   private pointer = { x: 0, y: 0, active: false };
+  // Device tilt (phones): -1..1 on each axis, relative to how the phone is
+  // being held. Drives the same tilt as the cursor when no finger is down.
+  private orient = { x: 0, y: 0, active: false };
   // Smoothed cursor velocity (px/s) for the wake; decays when the cursor rests.
   private pointerVel = { x: 0, y: 0, t: 0 };
   private tiltX = 0; private tiltY = 0;
@@ -592,6 +595,14 @@ export class ParticleEngine {
     this.freeUntil = this.time + TUNING.BURST_FREE_TIME * power;
   }
 
+  /** Phone orientation, -1..1 per axis (x: leaned left/right, y: tipped
+   *  toward/away). Used for the tilt whenever no finger is on the screen. */
+  setOrientation(x: number, y: number, active: boolean) {
+    this.orient.x = Math.max(-1, Math.min(1, x));
+    this.orient.y = Math.max(-1, Math.min(1, y));
+    this.orient.active = active;
+  }
+
   setPointer(x: number, y: number, active: boolean) {
     const now = performance.now();
     if (active && this.pointer.active) {
@@ -660,11 +671,14 @@ export class ParticleEngine {
     const k = free ? TUNING.SPRING * 0.08 : TUNING.SPRING;
     const damp = Math.exp(-(free ? TUNING.DAMPING * 0.35 : TUNING.DAMPING) * dt);
 
-    // Tilt toward the cursor (or drift gently when idle).
+    // Tilt toward the cursor, or with the phone's tilt, or drift gently when idle.
     let targetY = 0, targetX = 0;
     if (this.pointer.active) {
       targetY = Math.max(-1, Math.min(1, (this.pointer.x - cx) / (width / 2))) * TUNING.TILT;
       targetX = -Math.max(-1, Math.min(1, (this.pointer.y - cy) / (height / 2))) * TUNING.TILT;
+    } else if (this.orient.active) {
+      targetY = this.orient.x * TUNING.TILT * 1.3;
+      targetX = -this.orient.y * TUNING.TILT * 1.3;
     } else if (!this.reducedMotion) {
       targetY = Math.sin(t * 0.31) * TUNING.TILT * 0.25;
       targetX = Math.cos(t * 0.23) * TUNING.TILT * 0.15;
